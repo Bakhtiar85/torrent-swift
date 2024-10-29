@@ -1,9 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-    api: {
-        bodyParser: false,
-        responseLimit: false,
-      },
-}
+const nextConfig = {}
 
 module.exports = nextConfig

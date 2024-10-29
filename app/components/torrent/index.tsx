@@ -1,12 +1,21 @@
 // app/components/torrent/index.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
-
+// Enhanced file information interface
+interface TorrentFile {
+    name: string;
+    length: number;
+    downloaded: number;
+    progress: number;
+    path: string;
+    mime?: string;    // MIME type for the file
+    streamReady: boolean;
+}
 const TorrentDownloader = () => {
     const [file, setFile] = useState<File | null>(null);
     const [taskId, setTaskId] = useState<string | null>(null);
     const [progress, setProgress] = useState<number>(0);
-    const [files, setFiles] = useState<string[]>([]);
+    const [files, setFiles] = useState<TorrentFile[]>([]);
     const [showProgress, setShowProgress] = useState<boolean>(false);
     const [isProgressButtonDisabled, setIsProgressButtonDisabled] = useState<number | null>(null);
     const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -48,6 +57,7 @@ const TorrentDownloader = () => {
                 const data = await response.json();
                 setTaskId(data.taskId);
                 localStorage.setItem('torrentTaskId', data.taskId);
+                setFiles([]); // Reset the files list before the upload
             } else {
                 console.error('Upload failed:', await response.text());
             }
@@ -86,33 +96,21 @@ const TorrentDownloader = () => {
                 setProgress(data.progress);
             }
 
+            // If download is complete, initiate file download
             if (data.progress === 100) {
-                fetchFileList();
+                // Fetch the files available for download
+                setFiles(data.files || []); // Update files available for download
+                console.log("DATA: ", data.files)
             }
         } catch (error) {
             console.error('Error fetching progress:', error);
         }
     };
 
-    const fetchFileList = async () => {
-        if (!taskId) return;
-
-        try {
-            const response = await fetch(`/api/torrent/files?taskId=${taskId}`);
-            if (response.ok) {
-                const data = await response.json();
-                setFiles(data.files);
-            } else {
-                console.error('Failed to fetch file list:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error fetching file list:', error);
-        }
-    };
-
     const handleFileDownload = async (fileIndex: number) => {
         if (!taskId) return;
 
+        // Trigger the download for the specific file
         window.location.href = `/api/torrent/stream?taskId=${taskId}&fileIndex=${fileIndex}`;
     };
 
@@ -178,7 +176,7 @@ const TorrentDownloader = () => {
                 </div>
             )}
 
-            {showProgress && (
+            {progress > 0 && (
                 <div className="mt-6">
                     <h3 className="text-lg font-medium text-gray-300 mb-2 tracking-widest shadow-md">Download Progress</h3>
                     <div className="w-full bg-gray-700 rounded-full h-2.5">
@@ -195,9 +193,9 @@ const TorrentDownloader = () => {
                 <div className="mt-6">
                     <h3 className="text-lg font-medium text-gray-300 mb-4 tracking-wide shadow-md">Files Available for Download</h3>
                     <ul className="space-y-3">
-                        {files.map((file, index) => (
+                        {files?.map(({name, length, downloaded, progress, path, mime, streamReady}, index) => (
                             <li key={index} className="flex items-center justify-between py-3 px-4 bg-gray-700 rounded-lg shadow-sm">
-                                <span className="text-sm font-medium text-gray-300 shadow-sm">{file}</span>
+                                <span className="text-sm font-medium text-gray-300 shadow-sm">{name}</span>
                                 <button
                                     onClick={() => handleFileDownload(index)}
                                     className="ml-4 inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
