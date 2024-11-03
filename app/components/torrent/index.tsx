@@ -110,8 +110,31 @@ const TorrentDownloader = () => {
     const handleFileDownload = async (fileIndex: number) => {
         if (!taskId) return;
 
-        // Trigger the download for the specific file
-        window.location.href = `/api/torrent/stream?taskId=${taskId}&fileIndex=${fileIndex}`;
+        try {
+            // First check if the file is still available
+            const checkResponse = await fetch(`/api/torrent/stream?taskId=${taskId}&info=true`);
+            if (!checkResponse.ok) {
+                throw new Error('File not available');
+            }
+
+            // Proceed with download
+            window.location.href = `/api/torrent/stream?taskId=${taskId}&fileIndex=${fileIndex}`;
+        } catch (error) {
+            console.error('Download error:', error);
+            // Show error to user (you can use your preferred notification system)
+            alert('Download failed. Please try uploading the torrent file again.');
+
+            // Clear the stored taskId since it's no longer valid
+            localStorage.removeItem('torrentTaskId');
+            localStorage.removeItem('torrentFileName');
+
+            // Reset the component state
+            setTaskId(null);
+            setFile(null);
+            setFiles([]);
+            setProgress(0);
+            setShowProgress(false);
+        }
     };
 
     return (
@@ -193,7 +216,7 @@ const TorrentDownloader = () => {
                 <div className="mt-6">
                     <h3 className="text-lg font-medium text-gray-300 mb-4 tracking-wide shadow-md">Files Available for Download</h3>
                     <ul className="space-y-3">
-                        {files?.map(({name, length, downloaded, progress, path, mime, streamReady}, index) => (
+                        {files?.map(({ name, length, downloaded, progress, path, mime, streamReady }, index) => (
                             <li key={index} className="flex items-center justify-between py-3 px-4 bg-gray-700 rounded-lg shadow-sm">
                                 <span className="text-sm font-medium text-gray-300 shadow-sm">{name}</span>
                                 <button
