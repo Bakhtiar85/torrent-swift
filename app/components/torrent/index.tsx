@@ -1,16 +1,8 @@
 // app/components/torrent/index.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
-// Enhanced file information interface
-interface TorrentFile {
-    name: string;
-    length: number;
-    downloaded: number;
-    progress: number;
-    path: string;
-    mime?: string;    // MIME type for the file
-    streamReady: boolean;
-}
+import { TorrentFile } from '@/types';
+
 const TorrentDownloader = () => {
     const [file, setFile] = useState<File | null>(null);
     const [taskId, setTaskId] = useState<string | null>(null);

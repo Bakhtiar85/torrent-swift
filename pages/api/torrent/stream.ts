@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
 import * as WebTorrent from 'webtorrent';
 import NodeCache from 'node-cache';
+import { TaskInfo } from '@/types';
 
 const upload = multer({ storage: multer.memoryStorage() });
 // Increase cache TTL to 24 hours and check period to 600 seconds
@@ -12,28 +13,6 @@ const client = new (WebTorrent as any).default();
 
 // Store torrent buffers for potential reuse
 const torrentBuffers = new Map<string, Buffer>();
-
-interface TorrentFile {
-    name: string;
-    length: number;
-    downloaded: number;
-    progress: number;
-    path: string;
-    mime?: string;
-    streamReady: boolean;
-}
-
-interface TaskInfo {
-    infoHash: string;
-    name: string;
-    files: TorrentFile[];
-    progress: number;
-    downloadedBytes: number;
-    size: number;
-    timeRemaining: number;
-    downloadSpeed: number;
-    status: 'queued' | 'downloading' | 'completed' | 'error';
-}
 
 export const config = {
     api: {
