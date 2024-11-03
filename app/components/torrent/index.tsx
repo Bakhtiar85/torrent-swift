@@ -92,6 +92,13 @@ const TorrentDownloader = () => {
             const response = await fetch(`/api/torrent/stream?taskId=${taskId}`);
             const data = await response.json();
 
+            if (!data.ok) {
+                alert("Download interupted. Reseting everything!");
+
+                progressResetCancel();
+                return;
+            }
+
             if (!isNaN(data.progress)) {
                 setProgress(data.progress);
             }
@@ -134,6 +141,40 @@ const TorrentDownloader = () => {
             setFiles([]);
             setProgress(0);
             setShowProgress(false);
+        }
+    };
+
+    const progressResetCancel = async () => {
+        if (!taskId) return;
+
+        try {
+            // Make the DELETE request to cancel the task
+            const response = await fetch(`/api/torrent/stream?taskId=${taskId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                // Handle error if cancellation was unsuccessful
+                console.error('Failed to cancel task. Try in new tab or browser.');
+                return;
+            }
+
+            const data = await response.json();
+            console.log('Cancellation response:', data);
+
+            // Clear the stored taskId since it's no longer valid
+            localStorage.removeItem('torrentTaskId');
+            localStorage.removeItem('torrentFileName');
+            setTaskId(null);
+            setFiles([]);
+            setShowProgress(false);
+            setIsProgressButtonDisabled(null);
+
+            // Optionally, show a confirmation message to the user
+            alert('Torrent task has been successfully cancelled.');
+        } catch (error) {
+            console.error('Error cancelling task:', error);
+            alert('An error occurred while trying to cancel the task.');
         }
     };
 
@@ -196,6 +237,14 @@ const TorrentDownloader = () => {
                         <span>Frequently Clicking *Show Progress* Button can cause trouble. kindly wait...</span>
                     </p>
 
+                    <button
+                        onClick={progressResetCancel}
+                        disabled={isProgressButtonDisabled !== null}
+                        className={`relative w-full h-10 py-2 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white ${isProgressButtonDisabled !== null ? 'bg-blue-400/75 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 transition-all duration-200`}
+                    >
+                        Re-Upload files/Terminate Download in Progress.
+                    </button>
                 </div>
             )}
 

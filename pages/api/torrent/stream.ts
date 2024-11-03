@@ -121,6 +121,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                 } else {
                     return await handleProgressCheck(req, res);
                 }
+            case 'DELETE':
+                return await cancelTask(req, res); // Add this line
             default:
                 return res.status(405).json({ error: 'Method not allowed' });
         }
@@ -129,6 +131,54 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(500).json({
             error: 'Internal server error',
             details: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+
+const cancelTask = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+    const { taskId } = req.query;
+
+    if (!taskId || typeof taskId !== 'string') {
+        res.status(400).json({ error: 'Invalid taskId' });
+        return;
+    }
+
+    console.log(`Cancelling torrent download for task ${taskId}`);
+
+    const task = cache.get(taskId) as TaskInfo;
+    if (!task) {
+        res.status(404).json({ error: 'Task not found' });
+        return;
+    }
+
+    // Try to retrieve the torrent from the client by its infoHash
+    const torrent = await client.get(task.infoHash);
+    if (!torrent) {
+        res.status(404).json({ error: 'Torrent not found in client' });
+        return;
+    }
+
+    try {
+        // Properly destroy the torrent and clean up
+        torrent.destroy({ destroyStore: true }, (err: any) => {
+            if (err) {
+                console.error('Error destroying torrent:', err);
+                res.status(500).json({ error: 'Failed to cancel torrent download' });
+                return;
+            }
+
+            // Remove task from cache and buffer store
+            cache.del(taskId);
+            torrentBuffers.delete(taskId);
+
+            console.log(`Torrent for task ${taskId} successfully cancelled and cleaned up.`);
+            res.status(200).json({ status: 'success', message: 'Torrent download cancelled' });
+        });
+    } catch (error) {
+        console.error('Cancellation error:', error);
+        res.status(500).json({
+            error: 'Failed to cancel torrent download',
+            details: error instanceof Error ? error.message : 'Unknown error',
         });
     }
 };
@@ -240,7 +290,7 @@ const streamFile = async (req: NextApiRequest, res: NextApiResponse): Promise<vo
         if (torrentBuffers.has(taskId)) {
             console.log('Attempting to recover torrent from stored buffer');
             await recoverTorrent(taskId, torrentBuffers.get(taskId)!);
-            torrent = client.get(task.infoHash);
+            torrent = await client.get(task.infoHash);
             if (!torrent) {
                 res.status(404).json({ error: 'Torrent not found and recovery failed' });
                 return;
@@ -354,9 +404,9 @@ const recoverTorrent = async (taskId: string, buffer: Buffer): Promise<void> => 
 };
 
 // Modified cleanup function
-const cleanupTorrent = (infoHash: string) => {
+const cleanupTorrent = async (infoHash: string) => {
     try {
-        const torrent = client.get(infoHash);
+        const torrent = await client.get(infoHash);
         if (torrent) {
             console.log(`Cleaning up torrent: ${infoHash}`);
             torrent.destroy({ removeTorrent: true });
