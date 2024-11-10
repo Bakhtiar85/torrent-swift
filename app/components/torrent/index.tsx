@@ -1,6 +1,7 @@
 // app/components/torrent/index.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
+import FileListTable from './FileListTable';
 import { TorrentFile } from '@/types';
 
 const TorrentDownloader = () => {
@@ -76,11 +77,12 @@ const TorrentDownloader = () => {
                 setProgress(data.progress);
             }
 
+            setFiles(data.files || []); // Update files available for download
+            console.log("DATA: ", data.files);
+
             // If download is complete, initiate file download
             if (data.progress === 100) {
                 // Fetch the files available for download
-                setFiles(data.files || []); // Update files available for download
-                console.log("DATA: ", data.files);
                 randomTimeout = 2;
             }
         } catch (error) {
@@ -153,6 +155,7 @@ const TorrentDownloader = () => {
             localStorage.removeItem('torrentTaskId');
             localStorage.removeItem('torrentFileName');
             setTaskId(null);
+            setFile(null);
             setFiles([]);
             setShowProgress(false);
             setProgress(0);
@@ -167,11 +170,11 @@ const TorrentDownloader = () => {
     };
 
     return (
-        <div className="w-11/12 md:w-4/5 max-w-lg mx-auto -mt-2 md:-mt-16 sm:-mt-28 p-4 sm:p-6 bg-gray-800 rounded-lg shadow-xl text-white transition-all duration-300 ease-in-out hover:shadow-2xl">
+        <div className="w-11/12 md:w-4/5 max-w-2xl mx-auto -mt-2 lg:-mt-0 p-4 sm:p-6 bg-gray-800 rounded-lg shadow-xl text-white transition-all duration-300 ease-in-out hover:shadow-2xl">
             {!taskId && !isUploading && (
                 <>
                     <div className="mb-3 sm:mb-4">
-                        <label htmlFor="torrent-file" className="block text-sm lg:text-base font-semibold text-gray-300 mb-2 tracking-wider shadow-md">
+                        <label htmlFor="torrent-file" className="block text-sm lg:text-base font-semibold text-gray-300 mb-3.5 tracking-wider">
                             Select Torrent File
                         </label>
                         <input
@@ -238,7 +241,7 @@ const TorrentDownloader = () => {
             )}
 
             {progress > 0 && (
-                <div className="mt-4 sm:mt-6">
+                <div className="mt-4 sm:mt-6 hidden">
                     <h3 className="text-base lg:text-lg font-medium text-gray-300 mb-2 tracking-widest shadow-md">Download Progress</h3>
                     <div className="w-full bg-gray-700 rounded-full h-2 sm:h-2.5">
                         <div
@@ -252,37 +255,13 @@ const TorrentDownloader = () => {
 
             {files.length > 0 && (
                 <div className="mt-4 sm:mt-6">
-                    <h3 className="text-base lg:text-lg font-medium text-gray-300 mb-3 sm:mb-4 tracking-wide shadow-md">Files Available for Download</h3>
-                    <div className="max-h-48 md:max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-                        <ul className="space-y-2 sm:space-y-3">
-                            {files?.map(({ name, length, downloaded, progress, path, mime, streamReady }, index) => (
-                                <li key={index} className="flex items-center justify-between py-1.5 sm:py-3 px-1 sm:px-4 bg-gray-700 rounded-lg shadow-sm">
-                                    <span className="text-[10px] lg:text-sm italic font-medium text-gray-300">{index++}: &nbsp;</span>
-                                    <span className="text-[10px] lg:text-sm font-medium text-gray-300 shadow-sm truncate max-w-[30%]">{name}</span>
-
-                                    {progress > 0 && (
-                                        <div className="flex-1 w-3/5 mx-2">
-                                            <div className="w-full bg-gray-700 rounded-full h-2 sm:h-2.5 relative">
-                                                <div
-                                                    className="bg-blue-600 h-2 sm:h-2.5 rounded-full"
-                                                    style={{ width: `${progress}%` }}
-                                                ></div>
-                                                <p className="text-[8px] lg:text-sm font-medium text-gray-400 mt-0 shadow-sm absolute left-0 right-0 text-center">{progress.toFixed(2)}%</p>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {progress && <button
-                                        disabled={progress !== 100}
-                                        onClick={() => handleFileDownload(index)}
-                                        className={`ml-2 sm:ml-4 inline-flex items-center px-2 sm:px-3 py-1 border border-transparent text-[10px] md:text-xs font-medium rounded-md shadow-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 disabled:opacity-0`}
-                                    >
-                                        Download
-                                    </button>}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    <h3 className="text-base lg:text-lg font-medium text-gray-300 mb-3 sm:mb-4 tracking-wide shadow-md">Download Progress</h3>
+                    {files && (
+                        <FileListTable
+                            files={files}
+                            handleFileDownload={handleFileDownload}
+                        />
+                    )}
                 </div>
             )}
         </div>

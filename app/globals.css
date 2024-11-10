@@ -18,10 +18,71 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
+  background: linear-gradient(to bottom,
       transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+}
+
+/* Width and track styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Track styles */
+::-webkit-scrollbar-track {
+  background: #1f2937;
+  /* Dark gray background matching your theme */
+  border-radius: 4px;
+}
+
+/* Handle styles */
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  /* Slightly lighter gray for the handle */
+  border-radius: 4px;
+  border: 2px solid #1f2937;
+  /* Creates a nice padding effect */
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+  /* Even lighter gray on hover */
+}
+
+/* Handle on active/clicking */
+::-webkit-scrollbar-thumb:active {
+  background: #3b82f6;
+  /* Blue accent color when clicking */
+}
+
+/* Corner where vertical and horizontal scrollbars meet */
+::-webkit-scrollbar-corner {
+  background: #1f2937;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #374151 #1f2937;
+}
+
+/* Optional: Hide scrollbar while still allowing scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
+}
+
+/* Optional: When you want thinner scrollbars for specific elements */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
