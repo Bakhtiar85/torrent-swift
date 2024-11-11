@@ -1,35 +1,41 @@
-# TorrentVault
+# TorSwift
 
-TorrentVault is a sleek, modern web application designed for fast, secure, and anonymous torrent downloads. Built using Next.js and styled with Tailwind CSS, it provides a user-friendly interface for uploading and managing torrent files, along with real-time download progress updates.
+TorSwift is a sleek, modern web application designed for fast, secure, and anonymous torrent downloads. Built using Next.js and styled with Tailwind CSS, it offers a user-friendly interface for uploading and managing torrent files, along with real-time download progress updates.  
 
-## Features
+🌐 **Live at**: [https://torswift.pro](https://torswift.pro)
 
-- **User-Friendly Interface**: Intuitive design that simplifies torrent management.
-- **Real-Time Progress Tracking**: Keep track of your downloads with live progress updates.
-- **Responsive Design**: Fully responsive layout that works on both desktop and mobile devices.
-- **Modern Aesthetics**: Dark theme with dramatic styling, box shadows, and eye-catching typography.
+## ✨ Features
 
-## Technologies Used
+- 🎨 **User-Friendly Interface**: Intuitive design that simplifies torrent management.
+- 📊 **Real-Time Progress Tracking**: Track downloads with live progress updates.
+- 📱 **Responsive Design**: Fully responsive layout, compatible with both desktop and mobile devices.
+- 🌑 **Modern Aesthetics**: Dark theme with sleek styling, shadows, and eye-catching typography.
+
+## 🛠️ Technologies Used
 
 - **Frontend**: 
-  - Next.js: A React framework for building server-side rendered applications.
-  - Tailwind CSS: A utility-first CSS framework for styling.
+  - 🌐 **Next.js**: A powerful React framework for server-side rendering.
+  - 🎨 **Tailwind CSS**: A utility-first CSS framework for styling.
 - **Backend**: 
-  - Custom backend for handling torrent processing.
+  - 📦 **Custom Backend**: Built to handle torrent processing and integration.
 
-## Usage
+## ⚙️ Usage
 
-**Open your browser** and navigate to `http://localhost:3000` to view the application.
+Visit **[https://torswift.pro](https://torswift.pro)** in your browser to access the application.
 
-1. Select a .torrent file using the file input.
+1. **Select a .torrent file** using the file input.
 2. Click "Upload Torrent" to start processing.
-3. Do not close the tab, as it may lost the progress.
-4. Monitor the download progress and access available files for download once the process is complete.
+3. **Keep the tab open** to avoid losing download progress.
+4. Monitor the progress and access available files when the download completes.
 
-## Acknowledgements
+## 📦 Acknowledgements
 
-This is a personal project aimed at enhancing web development skills and exploring the functionalities of torrent management.
+This project uses the [WebTorrent](https://www.npmjs.com/package/webtorrent) library, an excellent tool for streaming torrents directly in the browser and Node.js.
 
-## License
+## 📝 License
 
-This project is not open for contributions and does not have a specific license.
+This project is a personal endeavor and is not open for contributions. No specific license is provided.
+
+---
+
+Thank you for checking out TorSwift! 🎉
