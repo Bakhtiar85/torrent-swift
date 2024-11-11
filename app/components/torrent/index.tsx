@@ -255,7 +255,7 @@ const TorrentDownloader = () => {
 
             {files.length > 0 && (
                 <div className="mt-4 sm:mt-6">
-                    <h3 className="text-base lg:text-lg font-medium text-gray-300 mb-3 sm:mb-4 tracking-wide shadow-md">Download Progress</h3>
+                    <h3 className="text-base lg:text-lg font-medium text-gray-300 mb-3 sm:mb-4 tracking-wide shadow-md">Setting up your files!</h3>
                     {files && (
                         <FileListTable
                             files={files}
