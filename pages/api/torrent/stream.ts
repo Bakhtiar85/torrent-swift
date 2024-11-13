@@ -21,6 +21,18 @@ export const config = {
     },
 };
 
+// Helper function to run middleware
+const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: any) => {
+    return new Promise((resolve, reject) => {
+        fn(req, res, (result: any) => {
+            if (result instanceof Error) {
+                return reject(result);
+            }
+            return resolve(result);
+        });
+    });
+};
+
 const getMimeType = (fileName: string): string => {
     const extension = fileName.split('.').pop()?.toLowerCase();
     const mimeTypes: { [key: string]: string } = {
@@ -162,74 +174,71 @@ const cancelTask = async (req: NextApiRequest, res: NextApiResponse): Promise<vo
     }
 };
 
-const handleTorrentUpload = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-    return new Promise((resolve) => {
-        upload.single('torrentFile')(req as any, res as any, async (err: any) => {
-            if (err) {
-                console.error('Upload error:', err);
-                res.status(500).json({ error: 'Error processing file upload' });
-                return resolve();
-            }
+const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
+    try {
+        await runMiddleware(req, res, upload.single('torrentFile')); // Use multer to handle file upload
 
-            const torrentFile = (req as any).file;
-            if (!torrentFile) {
-                res.status(400).json({ error: 'Please provide a valid torrent file.' });
-                return resolve();
-            }
+        // Parse JSON body if needed (for magnet link)
+        let body: { magnetLink?: string } = {};
+        if (!req.file) {
+            body = await new Promise((resolve, reject) => {
+                let json = '';
+                req.on('data', (chunk: any) => (json += chunk));
+                req.on('end', () => resolve(JSON.parse(json)));
+                req.on('error', reject);
+            });
+        }
 
-            const taskId = Date.now().toString();
-            console.log('Processing torrent:', torrentFile.originalname);
+        const torrentFile = req.file;
+        const magnetLink = body.magnetLink;
+        const taskId = Date.now().toString();
 
-            try {
-                // Store the torrent buffer for potential reuse
-                torrentBuffers.set(taskId, torrentFile.buffer);
+        if (!torrentFile && !magnetLink) {
+            return res.status(400).json({ error: 'Please provide a torrent file or a magnet link.' });
+        }
 
-                client.add(torrentFile.buffer, {
-                    announce: ['wss://tracker.openwebtorrent.com']
-                }, (torrent: WebTorrent.Torrent) => {
-                    console.log(`Torrent added with infoHash: ${torrent.infoHash}`);
+        console.log(`Processing ${torrentFile ? 'file' : 'magnet link'}`);
 
-                    const taskInfo: TaskInfo = {
-                        infoHash: torrent.infoHash,
-                        name: torrent.name,
-                        files: torrent.files.map(file => ({
-                            name: file.name,
-                            length: file.length,
-                            downloaded: 0,
-                            progress: 0,
-                            path: file.path,
-                            mime: getMimeType(file.name),
-                            streamReady: false
-                        })),
-                        progress: 0,
-                        downloadedBytes: 0,
-                        size: torrent.length,
-                        timeRemaining: 0,
-                        downloadSpeed: 0,
-                        status: 'queued'
-                    };
+        // Add torrent to WebTorrent client
+        const torrentSource = torrentFile ? torrentFile.buffer : magnetLink;
+        client.add(torrentSource, { announce: ['wss://tracker.openwebtorrent.com'] }, (torrent: WebTorrent.Torrent) => {
+            const taskInfo: TaskInfo = {
+                infoHash: torrent.infoHash,
+                name: torrent.name,
+                files: torrent.files.map((file) => ({
+                    name: file.name,
+                    length: file.length,
+                    downloaded: 0,
+                    progress: 0,
+                    path: file.path,
+                    mime: getMimeType(file.name),
+                    streamReady: false,
+                })),
+                progress: 0,
+                downloadedBytes: 0,
+                size: torrent.length,
+                timeRemaining: 0,
+                downloadSpeed: 0,
+                status: 'queued',
+            };
 
-                    cache.set(taskId, taskInfo);
-                    setupTorrentHandlers(torrent, taskId);
+            cache.set(taskId, taskInfo);
+            setupTorrentHandlers(torrent, taskId);
 
-                    res.status(200).json({
-                        taskId,
-                        name: torrent.name,
-                        files: taskInfo.files.map(file => ({
-                            name: file.name,
-                            size: formatBytes(file.length),
-                            mime: file.mime
-                        }))
-                    });
-                    resolve();
-                });
-            } catch (error) {
-                console.error('Torrent processing error:', error);
-                res.status(500).json({ error: 'Error processing torrent' });
-                resolve();
-            }
+            res.status(200).json({
+                taskId,
+                name: torrent.name,
+                files: taskInfo.files.map((file) => ({
+                    name: file.name,
+                    size: formatBytes(file.length),
+                    mime: file.mime,
+                })),
+            });
         });
-    });
+    } catch (error) {
+        console.error('Error in handleTorrentUpload:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 };
 
 const streamFile = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {

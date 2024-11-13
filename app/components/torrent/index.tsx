@@ -6,6 +6,7 @@ import { TorrentFile } from '@/types';
 
 const TorrentDownloader = () => {
     const [file, setFile] = useState<File | null>(null);
+    const [magnetLink, setMagnetLink] = useState<string | null>(null);
     const [taskId, setTaskId] = useState<string | null>(null);
     const [progress, setProgress] = useState<number>(0);
     const [files, setFiles] = useState<TorrentFile[]>([]);
@@ -28,31 +29,52 @@ const TorrentDownloader = () => {
         const selectedFile = event.target.files?.[0];
         if (selectedFile) {
             setFile(selectedFile);
+            setMagnetLink(null); // Clear the magnet link if a file is selected
             localStorage.setItem('torrentFileName', selectedFile.name);
         }
     };
 
+    const handleMagnetLinkChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const link = event.target.value;
+        setMagnetLink(link);
+        localStorage.setItem('torrentFileName', `magnet: ${link}`);
+        setFile(null); // Clear the file selection if a magnet link is entered
+    };
+
     const handleUpload = async () => {
-        if (!file) return;
+        if (!file && !magnetLink) return;
 
         setIsUploading(true);
 
-        const formData = new FormData();
-        formData.append('torrentFile', file);
-
         try {
-            const response = await fetch('/api/torrent/stream', {
-                method: 'POST',
-                body: formData,
-            });
+            let response;
 
-            if (response.ok) {
+            if (magnetLink) {
+                // Magnet link upload logic
+                response = await fetch('/api/torrent/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'magnet', magnetLink }),
+                });
+            } else if (file) {
+                // File upload logic
+                const formData = new FormData();
+                formData.append('torrentFile', file);
+                formData.append('type', 'file'); // Add the flag directly in form data
+
+                response = await fetch('/api/torrent/stream', {
+                    method: 'POST',
+                    body: formData,
+                });
+            }
+
+            if (response && response.ok) {
                 const data = await response.json();
                 setTaskId(data.taskId);
                 localStorage.setItem('torrentTaskId', data.taskId);
-                setFiles([]); // Reset the files list before the upload
+                setFiles([]); // Reset files list after successful upload
             } else {
-                console.error('Upload failed:', await response.text());
+                console.error('Upload failed:', await response?.text());
             }
         } catch (error) {
             console.error('Error during upload:', error);
@@ -187,17 +209,31 @@ const TorrentDownloader = () => {
                         />
                     </div>
 
+                    <div className="mb-3 sm:mb-4">
+                        <label htmlFor="magnet-link" className="block text-sm lg:text-base font-semibold text-gray-300 mb-3.5 tracking-wider">
+                            Or Enter Magnet Link
+                        </label>
+                        <input
+                            id="magnet-link"
+                            type="text"
+                            className="w-full px-3 py-2 rounded-md bg-gray-700 text-gray-300 text-xs lg:text-sm"
+                            value={magnetLink || ''}
+                            onChange={handleMagnetLinkChange}
+                            placeholder="Paste magnet link here"
+                        />
+                    </div>
+
                     {file && (
                         <p className="text-xs lg:text-sm text-gray-400 mb-3 sm:mb-4 shadow-sm">Selected file: {file.name}</p>
                     )}
 
                     <button
                         onClick={handleUpload}
-                        disabled={!file}
-                        className={`w-full py-2 sm:py-3 px-3 sm:px-4 border border-transparent rounded-lg shadow-lg text-xs lg:text-sm font-medium text-white tracking-wider ${file ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-500 cursor-not-allowed'
-                            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 transition-all duration-200`}
+                        disabled={!file && !magnetLink} // Enable if either file or magnetLink is present
+                        className={`w-full py-2 sm:py-3 px-3 sm:px-4 border border-transparent rounded-lg shadow-lg text-xs lg:text-sm font-medium text-white tracking-wider bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed
+                            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 transition-all duration-200`}
                     >
-                        Upload Torrent
+                        Upload Torrent File or Magnet Link
                     </button>
                 </>
             )}
