@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Torrent Hub',
-  description: 'DarkTorrent Hub! an app for downloading torrent files.',
+  title: 'Torrent Swift',
+  description: 'Torrent Swift! an app for downloading torrent files.',
 }
 
 export default function RootLayout({
