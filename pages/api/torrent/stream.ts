@@ -50,14 +50,14 @@ const getMimeType = (fileName: string): string => {
 };
 
 const getFileInfo = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-    const { taskId, fileIndex } = req.query;
+    const { infoHash, fileIndex } = req.query;
 
-    if (!taskId || typeof taskId !== 'string') {
-        res.status(400).json({ error: 'Invalid taskId' });
+    if (!infoHash || typeof infoHash !== 'string') {
+        res.status(400).json({ error: 'Invalid request' });
         return;
     }
 
-    const task = cache.get(taskId) as TaskInfo;
+    const task = cache.get(infoHash) as TaskInfo;
     if (!task) {
         res.status(404).json({ error: 'Task not found' });
         return;
@@ -76,14 +76,14 @@ const getFileInfo = async (req: NextApiRequest, res: NextApiResponse): Promise<v
 };
 
 const handleProgressCheck = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-    const { taskId } = req.query;
+    const { infoHash } = req.query;
 
-    if (!taskId || typeof taskId !== 'string') {
-        res.status(400).json({ error: 'Invalid taskId' });
+    if (!infoHash || typeof infoHash !== 'string') {
+        res.status(400).json({ error: 'Invalid request' });
         return;
     }
 
-    const task = cache.get(taskId) as TaskInfo;
+    const task = cache.get(infoHash) as TaskInfo;
     if (!task) {
         res.status(404).json({ error: 'Task not found' });
         return;
@@ -99,21 +99,25 @@ const handleProgressCheck = async (req: NextApiRequest, res: NextApiResponse): P
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
         console.log(`Received ${req.method} request to /api/torrent/stream`);
-        console.log('Query params:', req.query);
 
         switch (req.method) {
             case 'POST':
+                console.log('handleTorrentUpload::>');
                 return await handleTorrentUpload(req, res);
             case 'GET':
                 if (req.query.fileIndex !== undefined) {
+                    console.log('streamFile::> Req:', req.query);
                     return await streamFile(req, res);
                 } else if (req.query.info !== undefined) {
+                    console.log('getFileInfo::> Req:', req.query);
                     return await getFileInfo(req, res);
                 } else {
+                    console.log('handleProgressCheck::> Req:', req.query);
                     return await handleProgressCheck(req, res);
                 }
             case 'DELETE':
-                return await cancelTask(req, res); // Add this line
+                console.log('cancelTask::> Req:', req.query);
+                return await cancelTask(req, res);
             default:
                 return res.status(405).json({ error: 'Method not allowed' });
         }
@@ -127,16 +131,16 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const cancelTask = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-    const { taskId } = req.query;
+    const { infoHash } = req.query;
 
-    if (!taskId || typeof taskId !== 'string') {
-        res.status(400).json({ error: 'Invalid taskId' });
+    if (!infoHash || typeof infoHash !== 'string') {
+        res.status(400).json({ error: 'Invalid infoHash' });
         return;
     }
 
-    console.log(`Cancelling torrent download for task ${taskId}`);
+    console.log(`Cancelling torrent download for task ${infoHash}`);
 
-    const task = cache.get(taskId) as TaskInfo;
+    const task = cache.get(infoHash) as TaskInfo;
     if (!task) {
         res.status(404).json({ error: 'Task not found' });
         return;
@@ -159,10 +163,10 @@ const cancelTask = async (req: NextApiRequest, res: NextApiResponse): Promise<vo
             }
 
             // Remove task from cache and buffer store
-            cache.del(taskId);
-            torrentBuffers.delete(taskId);
+            cache.del(infoHash);
+            torrentBuffers.delete(infoHash);
 
-            console.log(`Torrent for task ${taskId} successfully cancelled and cleaned up.`);
+            console.log(`Torrent for task ${infoHash} successfully cancelled and cleaned up.`);
             res.status(200).json({ status: 'success', message: 'Torrent download cancelled' });
         });
     } catch (error) {
@@ -191,7 +195,6 @@ const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
 
         const torrentFile = req.file;
         const magnetLink = body.magnetLink;
-        const taskId = Date.now().toString();
 
         if (!torrentFile && !magnetLink) {
             return res.status(400).json({ error: 'Please provide a torrent file or a magnet link.' });
@@ -199,8 +202,41 @@ const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
 
         console.log(`Processing ${torrentFile ? 'file' : 'magnet link'}`);
 
-        // Add torrent to WebTorrent client
+        // Check if torrent is already being downloaded
         const torrentSource = torrentFile ? torrentFile.buffer : magnetLink;
+
+        // Create a temporary torrent to get the infoHash without adding it to the client
+        const tempTorrent = await new Promise<WebTorrent.Torrent>((resolve, reject) => {
+            const temp = new (WebTorrent as any).default();
+            temp.add(torrentSource, { announce: ['wss://tracker.openwebtorrent.com'] }, (torrent: WebTorrent.Torrent) => {
+                resolve(torrent);
+                // Cleanup temporary client after getting infoHash
+                setTimeout(() => {
+                    torrent.destroy();
+                    temp.destroy();
+                }, 1000);
+            });
+        });
+
+        const infoHash = tempTorrent.infoHash;
+
+        // Check if torrent is already in progress
+        const existingTask = Array.from(cache.keys()).find(key => {
+            const task = cache.get(key) as TaskInfo;
+            return task && task.infoHash === infoHash;
+        });
+
+        if (existingTask) {
+            const existingTaskInfo = cache.get(existingTask) as TaskInfo;
+            return res.status(200).json({
+                infoHash,
+                name: existingTaskInfo.name,
+                files: existingTaskInfo.files,
+                status: 'already_exists'
+            });
+        }
+
+        // Add the actual torrent to the client
         client.add(torrentSource, { announce: ['wss://tracker.openwebtorrent.com'] }, (torrent: WebTorrent.Torrent) => {
             const taskInfo: TaskInfo = {
                 infoHash: torrent.infoHash,
@@ -222,11 +258,11 @@ const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
                 status: 'queued',
             };
 
-            cache.set(taskId, taskInfo);
-            setupTorrentHandlers(torrent, taskId);
+            cache.set(infoHash, taskInfo);
+            setupTorrentHandlers(torrent, infoHash);
 
             res.status(200).json({
-                taskId,
+                infoHash,
                 name: torrent.name,
                 files: taskInfo.files.map((file) => ({
                     name: file.name,
@@ -242,24 +278,22 @@ const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
 };
 
 const streamFile = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-    const { taskId, fileIndex } = req.query;
+    const { infoHash, fileIndex } = req.query;
 
-    if (!taskId || typeof taskId !== 'string' || !fileIndex || typeof fileIndex !== 'string') {
-        res.status(400).json({ error: 'Invalid taskId or fileIndex' });
+    if (!infoHash || typeof infoHash !== 'string' || !fileIndex || typeof fileIndex !== 'string') {
+        res.status(400).json({ error: 'Invalid infoHash or fileIndex' });
         return;
     }
 
-    console.log(`Attempting to stream file. TaskID: ${taskId}, FileIndex: ${fileIndex}`);
+    console.log(`Attempting to stream file. InfoHash: ${infoHash}, FileIndex: ${fileIndex}`);
 
-    let task = cache.get(taskId) as TaskInfo;
+    let task = cache.get(infoHash) as TaskInfo;
     if (!task) {
-        console.log(`Task not found in cache: ${taskId}`);
-        // Try to recover the torrent if we have the buffer
-        if (torrentBuffers.has(taskId)) {
+        console.log(`Task not found in cache: ${infoHash}`);
+        if (torrentBuffers.has(infoHash)) {
             console.log('Attempting to recover torrent from stored buffer');
-            await recoverTorrent(taskId, torrentBuffers.get(taskId)!);
-            // Retry getting the task
-            const recoveredTask = cache.get(taskId) as TaskInfo;
+            await recoverTorrent(infoHash, torrentBuffers.get(infoHash)!);
+            const recoveredTask = cache.get(infoHash) as TaskInfo;
             if (!recoveredTask) {
                 res.status(404).json({ error: 'Task not found and recovery failed' });
                 return;
@@ -275,9 +309,9 @@ const streamFile = async (req: NextApiRequest, res: NextApiResponse): Promise<vo
     if (!torrent) {
         console.log(`Torrent not found in client: ${task.infoHash}`);
         // Try to recover the torrent if we have the buffer
-        if (torrentBuffers.has(taskId)) {
+        if (torrentBuffers.has(infoHash)) {
             console.log('Attempting to recover torrent from stored buffer');
-            await recoverTorrent(taskId, torrentBuffers.get(taskId)!);
+            await recoverTorrent(infoHash, torrentBuffers.get(infoHash)!);
             torrent = await client.get(task.infoHash);
             if (!torrent) {
                 res.status(404).json({ error: 'Torrent not found and recovery failed' });
@@ -354,7 +388,7 @@ const streamFile = async (req: NextApiRequest, res: NextApiResponse): Promise<vo
     }
 };
 
-const recoverTorrent = async (taskId: string, buffer: Buffer): Promise<void> => {
+const recoverTorrent = async (infoHash: string, buffer: Buffer): Promise<void> => {
     return new Promise((resolve, reject) => {
         try {
             client.add(buffer, {
@@ -380,8 +414,8 @@ const recoverTorrent = async (taskId: string, buffer: Buffer): Promise<void> => 
                     status: 'queued'
                 };
 
-                cache.set(taskId, taskInfo);
-                setupTorrentHandlers(torrent, taskId);
+                cache.set(infoHash, taskInfo);
+                setupTorrentHandlers(torrent, infoHash);
                 resolve();
             });
         } catch (error) {
@@ -398,11 +432,11 @@ const cleanupTorrent = async (infoHash: string) => {
         if (torrent) {
             console.log(`Cleaning up torrent: ${infoHash}`);
             torrent.destroy({ removeTorrent: true });
-            // Find and remove the associated taskId from torrentBuffers
-            torrentBuffers.forEach((_, taskId) => {
-                const task = cache.get(taskId) as TaskInfo;
+            // Find and remove the associated infoHash from torrentBuffers
+            torrentBuffers.forEach((_, infoHash) => {
+                const task = cache.get(infoHash) as TaskInfo;
                 if (task && task.infoHash === infoHash) {
-                    torrentBuffers.delete(taskId);
+                    torrentBuffers.delete(infoHash);
                     return; // Exit the forEach loop early
                 }
             });
@@ -412,8 +446,8 @@ const cleanupTorrent = async (infoHash: string) => {
     }
 };
 
-const updateProgress = (torrent: WebTorrent.Torrent, taskId: string): void => {
-    const taskInfo = cache.get(taskId) as TaskInfo;
+const updateProgress = (torrent: WebTorrent.Torrent, infoHash: string): void => {
+    const taskInfo = cache.get(infoHash) as TaskInfo;
     if (taskInfo) {
         taskInfo.downloadedBytes = torrent.downloaded;
         taskInfo.progress = torrent.progress * 100;
@@ -432,32 +466,32 @@ const updateProgress = (torrent: WebTorrent.Torrent, taskId: string): void => {
             streamReady: file.progress > 0.1 // Consider file ready for streaming at 10%
         }));
 
-        cache.set(taskId, taskInfo);
+        cache.set(infoHash, taskInfo);
     }
 };
 
 // Modify setupTorrentHandlers to include cleanup
-const setupTorrentHandlers = (torrent: WebTorrent.Torrent, taskId: string): void => {
+const setupTorrentHandlers = (torrent: WebTorrent.Torrent, infoHash: string): void => {
     const progressInterval = setInterval(() => {
-        if (!cache.get(taskId)) {
+        if (!cache.get(infoHash)) {
             clearInterval(progressInterval);
             return;
         }
-        updateProgress(torrent, taskId);
+        updateProgress(torrent, infoHash);
     }, 1000);
 
     torrent.on('done', () => {
-        console.log(`Torrent download completed for task ${taskId}`);
+        console.log(`Torrent download completed for task ${infoHash}`);
         clearInterval(progressInterval);
-        updateProgress(torrent, taskId);
+        updateProgress(torrent, infoHash);
     });
 
     torrent.on('error', (err) => {
-        console.error(`Torrent error for task ${taskId}:`, err);
-        const taskInfo = cache.get(taskId) as TaskInfo;
+        console.error(`Torrent error for task ${infoHash}:`, err);
+        const taskInfo = cache.get(infoHash) as TaskInfo;
         if (taskInfo) {
             taskInfo.status = 'error';
-            cache.set(taskId, taskInfo);
+            cache.set(infoHash, taskInfo);
         }
         cleanupTorrent(torrent.infoHash);
     });

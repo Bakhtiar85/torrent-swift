@@ -70,8 +70,8 @@ const TorrentDownloader = () => {
 
             if (response && response.ok) {
                 const data = await response.json();
-                setTaskId(data.taskId);
-                localStorage.setItem('torrentTaskId', data.taskId);
+                setTaskId(data.infoHash);
+                localStorage.setItem('torrentInfoHash', data.infoHash);
                 setFiles([]); // Reset files list after successful upload
             } else {
                 console.error('Upload failed:', await response?.text());
@@ -92,7 +92,7 @@ const TorrentDownloader = () => {
         let randomTimeout = Math.floor(Math.random() * (15 - 5 + 1)) + 5;
 
         try {
-            const response = await fetch(`/api/torrent/stream?taskId=${taskId}`);
+            const response = await fetch(`/api/torrent/stream?infoHash=${taskId}`);
             const data = await response.json();
 
             if (!isNaN(data.progress)) {
@@ -130,13 +130,13 @@ const TorrentDownloader = () => {
 
         try {
             // First check if the file is still available
-            const checkResponse = await fetch(`/api/torrent/stream?taskId=${taskId}&info=true`);
+            const checkResponse = await fetch(`/api/torrent/stream?infoHash=${taskId}&info=true`);
             if (!checkResponse.ok) {
                 throw new Error('File not available');
             }
 
             // Proceed with download
-            window.location.href = `/api/torrent/stream?taskId=${taskId}&fileIndex=${fileIndex}`;
+            window.location.href = `/api/torrent/stream?infoHash=${taskId}&fileIndex=${fileIndex}`;
         } catch (error) {
             console.error('Download error:', error);
             // Show error to user (you can use your preferred notification system)
@@ -159,20 +159,6 @@ const TorrentDownloader = () => {
         if (!taskId) return;
 
         try {
-            // Make the DELETE request to cancel the task
-            const response = await fetch(`/api/torrent/stream?taskId=${taskId}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                // Handle error if cancellation was unsuccessful
-                console.error('Failed to cancel task. Try in new tab or browser.');
-                // return;
-            }
-
-            const data = await response.json();
-            console.log('Cancellation response:', data);
-
             // Clear the stored taskId since it's no longer valid
             localStorage.removeItem('torrentTaskId');
             localStorage.removeItem('torrentFileName');
@@ -184,10 +170,10 @@ const TorrentDownloader = () => {
             setIsProgressButtonDisabled(null);
 
             // Optionally, show a confirmation message to the user
-            alert('Torrent task has been successfully cancelled.');
+            alert('Re-Upload fiels.');
         } catch (error) {
             console.error('Error cancelling task:', error);
-            alert('An error occurred while trying to cancel the task.');
+            alert('An error occurred while clearing.');
         }
     };
 
@@ -271,7 +257,7 @@ const TorrentDownloader = () => {
                         className={`relative w-full h-8 sm:h-10 py-1.5 sm:py-2 px-3 sm:px-4 border border-transparent rounded-lg shadow-lg text-[10px] md:text-sm font-medium text-white ${isProgressButtonDisabled !== null ? 'bg-blue-400/75 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                             } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 transition-all duration-200`}
                     >
-                        Re-Upload files/Terminate Download in Progress.
+                        Re-Upload files/Clear Cache
                     </button>
                 </div>
             )}
