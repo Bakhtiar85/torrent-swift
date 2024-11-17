@@ -3,10 +3,10 @@ import HomePage from './components/torrent'
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-3 sm:p-4 md:p-10 md:pt-3 bg-gray-900 text-white">
-      <div className="z-10 w-full text-center font-serif p-3 sm:pb-5 tracking-wider shadow-md">
+      <div className="z-10 w-full text-center font-serif p-3 sm:pb-3.5 tracking-wider shadow-md flex justify-evenly items-center">
         <div className="flex justify-center items-center gap-2.5">
           <span className='rotate-12 pb-2.5'>
-            <svg xmlns="http://www.w3.org/2000/svg" className='w-12 md:w-16 h-auto' viewBox="60 60 250 250" preserveAspectRatio="xMidYMid meet" version="1.0">
+            <svg xmlns="http://www.w3.org/2000/svg" className='w-8 md:w-12 h-auto' viewBox="60 60 250 250" preserveAspectRatio="xMidYMid meet" version="1.0">
               <defs>
                 <clipPath id="8a1a0b04e7">
                   <path d="M 92.199219 80.140625 L 267.699219 80.140625 L 267.699219 294.640625 L 92.199219 294.640625 Z M 92.199219 80.140625 " clipRule="nonzero">
@@ -57,7 +57,7 @@ export default function Home() {
               </g>
             </svg>
           </span>
-          <h1 className="font-extrabold text-2xl sm:text-3xl 2xl:text-5xl text-transparent bg-gradient-to-r from-blue-500/75 from-5% to-white/75 bg-clip-text drop-shadow-lg sm:mb-0">
+          <h1 className="font-extrabold text-2xl 2xl:text-4xl text-transparent bg-gradient-to-r from-blue-500/75 from-5% to-white/75 bg-clip-text drop-shadow-lg sm:mb-0">
             Torrent Swift
           </h1>
         </div>

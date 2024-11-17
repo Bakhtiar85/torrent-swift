@@ -99,9 +99,9 @@ export const streamFile = async (req: NextApiRequest, res: NextApiResponse): Pro
 
         res.on('close', () => {
             console.log(`Stream closed for file: ${file.name}`);
-            if (file.progress === 1) {
-                cleanupTorrent(task.infoHash);
-            }
+            // if (file.progress === 1) {
+            //     cleanupTorrent(task.infoHash);
+            // }
         });
     } catch (error) {
         console.error('Streaming error:', error);
