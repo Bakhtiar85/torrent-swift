@@ -1,3 +1,4 @@
+// types/index.ts
 export interface TorrentFile {
     name: string;
     length: number;
