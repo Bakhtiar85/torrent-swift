@@ -1,16 +1,6 @@
 // hooks/useTorrentProgress.ts
 import { useState } from 'react';
-import { TorrentFile } from '@/types';
-
-interface UseTorrentProgressReturn {
-    progress: number | null;
-    files: TorrentFile[];
-    showProgress: boolean;
-    isProgressButtonDisabled: number | null;
-    handleProgressCheck: () => Promise<void>;
-    handleFileDownload: (fileIndex: number) => Promise<void>;
-    progressResetCancel: () => Promise<void>;
-}
+import { UseTorrentProgressReturn, TorrentFile } from '@/types';
 
 export const useTorrentProgress = (taskId: string | null): UseTorrentProgressReturn => {
     const [progress, setProgress] = useState<number | null>(null);

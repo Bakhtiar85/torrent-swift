@@ -1,15 +1,6 @@
 // hooks/useTorrentUpload.ts
 import { useState, useEffect } from 'react';
-
-interface UseTorrentUploadReturn {
-    file: File | null;
-    magnetLink: string | null;
-    taskId: string | null;
-    isUploading: boolean;
-    handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    handleMagnetLinkChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    handleUpload: () => Promise<void>;
-}
+import { UseTorrentUploadReturn } from '@/types';
 
 export const useTorrentUpload = (): UseTorrentUploadReturn => {
     const [file, setFile] = useState<File | null>(null);

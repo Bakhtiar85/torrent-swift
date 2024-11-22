@@ -26,3 +26,55 @@ export interface FileResponse {
     size: string;
     mime: string | undefined;
 }
+
+export interface State {
+    run: boolean;
+    stepIndex: number;
+}
+
+export interface TourGuideProps {
+    start: boolean;
+    setStartTour: (value: boolean) => void;
+    onTourEnd: () => void;
+}
+
+/************************************************ FILES INTERFACES *********************************************/
+
+export interface UseTorrentProgressReturn {
+    progress: number | null;
+    files: TorrentFile[];
+    showProgress: boolean;
+    isProgressButtonDisabled: number | null;
+    handleProgressCheck: () => Promise<void>;
+    handleFileDownload: (fileIndex: number) => Promise<void>;
+    progressResetCancel: () => Promise<void>;
+}
+
+export interface UseTorrentUploadReturn {
+    file: File | null;
+    magnetLink: string | null;
+    taskId: string | null;
+    isUploading: boolean;
+    handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    handleMagnetLinkChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    handleUpload: () => Promise<void>;
+}
+
+export interface UploadFormProps {
+    file: File | null;
+    magnetLink: string | null;
+    handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    handleMagnetLinkChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    handleUpload: () => Promise<void>;
+}
+
+export interface ProgressControlsProps {
+    isProgressButtonDisabled: number | null;
+    handleProgressCheck: () => Promise<void>;
+    progressResetCancel: () => Promise<void>;
+}
+
+export interface FileListTableProps {
+    files: TorrentFile[];
+    handleFileDownload: (fileIndex: number) => Promise<void>;
+}

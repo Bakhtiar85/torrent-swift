@@ -1,11 +1,6 @@
 // app/components/torrent/modules/FileListTable.tsx
 import React, { useState, useRef, useEffect } from 'react';
-import { TorrentFile } from '@/types';
-
-interface FileListTableProps {
-    files: TorrentFile[];
-    handleFileDownload: (fileIndex: number) => Promise<void>;
-}
+import { FileListTableProps, TorrentFile } from '@/types';
 
 const FileListTable: React.FC<FileListTableProps> = ({ files, handleFileDownload }) => {
     const [activeDetailIndex, setActiveDetailIndex] = useState<number | null>(null);
@@ -52,7 +47,7 @@ const FileListTable: React.FC<FileListTableProps> = ({ files, handleFileDownload
             <div className="relative">
                 {/* Fixed header */}
                 <div className="sticky top-0 z-10 bg-gray-800/50">
-                    <table className="w-full table-fixed">
+                    <table id="file-list-table" className="w-full table-fixed">
                         <thead>
                             <tr>
                                 <th className="w-4 md:w-8 px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider">#</th>
@@ -82,7 +77,7 @@ const FileListTable: React.FC<FileListTableProps> = ({ files, handleFileDownload
                                         <div className="relative flex items-center">
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center space-x-2">
-                                                    <span className="block text-xs md:text-sm font-medium text-gray-200 truncate max-w-full">
+                                                    <span aria-label="file-name" className="block text-xs md:text-sm font-medium text-gray-200 truncate max-w-full">
                                                         {file.name}
                                                     </span>
                                                 </div>

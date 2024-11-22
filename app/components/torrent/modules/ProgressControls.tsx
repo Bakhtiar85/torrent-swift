@@ -1,9 +1,5 @@
 // app/components/torrent/ProgressControls.tsx
-interface ProgressControlsProps {
-    isProgressButtonDisabled: number | null;
-    handleProgressCheck: () => Promise<void>;
-    progressResetCancel: () => Promise<void>;
-}
+import { ProgressControlsProps } from '@/types';
 
 const ProgressControls: React.FC<ProgressControlsProps> = ({
     isProgressButtonDisabled,
@@ -19,6 +15,7 @@ const ProgressControls: React.FC<ProgressControlsProps> = ({
         </div>
 
         <button
+            id="step-5"
             onClick={handleProgressCheck}
             disabled={isProgressButtonDisabled !== null}
             className={`relative w-full h-8 sm:h-10 py-1.5 sm:py-2 px-3 sm:px-4 border border-transparent rounded-lg shadow-lg text-xs sm:text-sm font-medium text-white ${isProgressButtonDisabled !== null ? 'bg-green-400/75 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
@@ -33,13 +30,14 @@ const ProgressControls: React.FC<ProgressControlsProps> = ({
             )}
         </button>
 
-        <p className="w-full text-center mt-4 sm:mt-5 text-red-600 mb-3 sm:mb-4 text-xs md:text-sm md:font-semibold underline hover:scale-105 sm:hover:scale-110 hover:text-white">
+        <p id="warning-message" className="w-full text-center mt-4 sm:mt-5 text-red-600 mb-3 sm:mb-4 text-xs md:text-sm md:font-semibold underline hover:scale-105 sm:hover:scale-110 hover:text-white">
             <strong>Warning!</strong>
             <br />
             <span>Frequently Clicking *Show Progress* Button can cause trouble. kindly wait...</span>
         </p>
 
         <button
+        id="re-upload-btn"
             onClick={progressResetCancel}
             disabled={isProgressButtonDisabled !== null}
             className={`relative w-full h-8 sm:h-10 py-1.5 sm:py-2 px-3 sm:px-4 border border-transparent rounded-lg shadow-lg text-[10px] md:text-sm font-medium text-white ${isProgressButtonDisabled !== null ? 'bg-blue-400/75 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'

@@ -29,7 +29,7 @@ const TorrentDownloader: React.FC = () => {
     } = useTorrentProgress(taskId);
 
     return (
-        <div className="w-11/12 md:w-4/5 max-w-2xl mx-auto -mt-2 lg:-mt-0 p-4 sm:p-6 bg-gray-800 rounded-lg shadow-xl text-white transition-all duration-300 ease-in-out hover:shadow-2xl">
+        <div id="step-1" className="w-11/12 md:w-4/5 max-w-2xl mx-auto -mt-2 lg:-mt-0 p-4 sm:p-6 bg-gray-800 rounded-lg shadow-xl text-white transition-all duration-300 ease-in-out hover:shadow-2xl">
             {!taskId && !isUploading && (
                 <UploadForm
                     file={file}

@@ -1,9 +1,31 @@
+"use client";
+import { useEffect, useState } from 'react';
 import HomePage from './components/torrent'
+import TourGuide from './components/modals/TourGuide';
 
 export default function Home() {
+  const [startTour, setStartTour] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(true);
+  }, []);
+
+  const handleTourStart = () => {
+    setStartTour(true);
+  };
+
+  const handleTourEnd = () => {
+    setStartTour(false);
+  };
+
+  if (!loaded) {
+    return null;
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-3 sm:p-4 md:p-10 md:pt-3 bg-gray-900 text-white">
-      <div className="z-10 w-full text-center font-serif p-3 sm:pb-3.5 tracking-wider shadow-md flex justify-evenly items-center">
+      <div className="z-10 w-full text-center font-serif p-3 sm:pb-3.5 tracking-wider shadow-md flex flex-col lg:flex-row justify-evenly items-center">
         <div className="flex justify-center items-center gap-2.5">
           <span className='rotate-12 pb-2.5'>
             <svg xmlns="http://www.w3.org/2000/svg" className='w-8 md:w-12 h-auto' viewBox="60 60 250 250" preserveAspectRatio="xMidYMid meet" version="1.0">
@@ -61,7 +83,21 @@ export default function Home() {
             Torrent Swift
           </h1>
         </div>
-        <p className="text-lg sm:text-xl text-transparent bg-gradient-to-r from-white from-10% to-blue-800 bg-clip-text xl:-mt-1.5 italic">
+
+        <div id="tour-start-btn" className="relative">
+          <div>
+            <button onClick={handleTourStart} className="px-2.5 py-1.5 text-sm text-white bg-blue-400 rounded-md">
+              Start Tour
+            </button>
+          </div>
+
+          {startTour && (
+            <TourGuide start={startTour} setStartTour={setStartTour} onTourEnd={handleTourEnd} />
+          )}
+
+        </div>
+
+        <p className="text-sm sm:text-lg lg:text-xl text-transparent bg-gradient-to-r from-white from-10% to-blue-800 bg-clip-text xl:-mt-1.5 italic">
           Secure & Anonymous Downloads
         </p>
       </div>
@@ -72,6 +108,18 @@ export default function Home() {
 
       <footer className="w-full text-sm xl:text-lg text-center p-4 sm:p-6 text-gray-400 shadow-md">
         &copy; {new Date().getFullYear()} Torrent Swift - Fast, Secure, Anonymous Downloads
+        <br />
+        <div className="flex justify-center items-center w-full">
+          <p className="text-sm italic uppercase font-mono">
+            <i>My other</i>&nbsp;
+            <a className='underline underline-offset-2' href="http://makhdoom-abubakar.vercel.app"><b>Projects!</b></a>
+          </p>
+          👩‍💻
+          <p className="text-sm italic uppercase font-mono">
+            <i>Ping Me @</i>
+            <a className='underline underline-offset-2' href="mailto:makhdoomabubar85@gmail.com"><b>gmail</b></a>
+          </p>
+        </div>
       </footer>
     </main>
   );

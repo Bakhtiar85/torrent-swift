@@ -1,0 +1,56 @@
+[
+    {
+        "title": "Start Your Tour",
+        "placement": "top",
+        "description": "Click here to begin a quick walkthrough of the app features and functionalities.",
+        "target": "#tour-start-btn"
+    },
+    {
+        "title": "Your Concerned Section",
+        "placement": "auto",
+        "description": "Engaging area for you to keep focus on...!",
+        "target": "#step-1"
+    },
+    {
+        "title": "Select a Torrent File",
+        "placement": "right",
+        "description": "Use this button to select a .torrent file from your device.",
+        "target": "#step-2"
+    },
+    {
+        "title": "Paste Magnet Link",
+        "placement": "top",
+        "description": "Alternatively, paste a magnet link here instead of .torrent file.",
+        "target": "#step-3"
+    },
+    {
+        "title": "Upload and Start",
+        "placement": "top",
+        "description": "Click this button to upload your file or magnet link and initiate the download process.",
+        "target": "#step-4"
+    },
+    {
+        "title": "Show Progress Button",
+        "placement": "bottom",
+        "description": "Click this button to check the progress of your torrent processing.",
+        "target": "#step-5"
+    },
+    {
+        "title": "Warning Message",
+        "placement": "bottom",
+        "description": "Please avoid frequently clicking the 'Show Progress' button to prevent potential issues.",
+        "target": "#warning-message"
+    },
+    {
+        "title": "Re-Upload/Clear Cache",
+        "placement": "bottom",
+        "description": "Click this button to clear cache or re-upload files if needed.",
+        "target": "#re-upload-btn"
+    },
+    {
+        "title": "File List",
+        "placement": "top",
+        "description": "This table shows the list of files being processed, including details like progress and download status.",
+        "target": "#file-list-table"
+    }
+]
