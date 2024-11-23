@@ -111,13 +111,13 @@ export default function Home() {
         <br />
         <div className="flex justify-center items-center w-full">
           <p className="text-sm italic uppercase font-mono">
-            <i>My other</i>&nbsp;
-            <a className='underline underline-offset-2' href="http://makhdoom-abubakar.vercel.app"><b>Projects!</b></a>
+            <i>Check My other</i>&nbsp;
+            <a className='underline underline-offset-2' target='_blank' href="http://makhdoom-abubakar.vercel.app/projects"><b>Projects!</b></a>
           </p>
           👩‍💻
           <p className="text-sm italic uppercase font-mono">
             <i>Ping Me @</i>
-            <a className='underline underline-offset-2' href="mailto:makhdoomabubar85@gmail.com"><b>gmail</b></a>
+            <a className='underline underline-offset-2' target='_blank' href="mailto:makhdoomabubar85@gmail.com"><b>gmail</b></a>
           </p>
         </div>
       </footer>

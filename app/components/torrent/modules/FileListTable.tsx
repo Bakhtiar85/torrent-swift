@@ -1,6 +1,6 @@
 // app/components/torrent/modules/FileListTable.tsx
 import React, { useState, useRef, useEffect } from 'react';
-import { FileListTableProps, TorrentFile } from '@/types';
+import { FileListTableProps } from '@/types';
 
 const FileListTable: React.FC<FileListTableProps> = ({ files, handleFileDownload }) => {
     const [activeDetailIndex, setActiveDetailIndex] = useState<number | null>(null);

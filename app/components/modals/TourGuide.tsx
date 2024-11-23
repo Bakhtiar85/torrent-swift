@@ -3,7 +3,6 @@ import React from "react";
 import { useEffect, useState } from "react";
 import type { CallBackProps, Step } from "react-joyride";
 import Joyride, { EVENTS, STATUS } from "react-joyride";
-import Image from "next/image";
 import { State as OriginalJoyState, TourGuideProps } from "@/types";
 import tourGuideData from "@/public/data/guid.json";
 

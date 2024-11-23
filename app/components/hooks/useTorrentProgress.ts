@@ -17,7 +17,11 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
         let randomTimeout = Math.floor(Math.random() * (15 - 5 + 1)) + 5;
 
         try {
-            const response = await fetch(`/api/torrent/stream?infoHash=${taskId}`);
+            const response = await fetch(`/api/torrent/stream?infoHash=${taskId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
             const data = await response.json();
 
             if (!isNaN(data.progress)) {
@@ -51,7 +55,11 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
         if (!taskId) return;
 
         try {
-            const checkResponse = await fetch(`/api/torrent/stream?infoHash=${taskId}&info=true`);
+            const checkResponse = await fetch(`/api/torrent/stream?infoHash=${taskId}&info=true`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
             if (!checkResponse.ok) {
                 throw new Error('File not available');
             }
