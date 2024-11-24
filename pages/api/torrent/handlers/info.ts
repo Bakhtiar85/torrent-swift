@@ -1,7 +1,7 @@
 // pages/api/torrent/handlers/info.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { TaskInfo } from '@/types';
-import { cache } from '@/pages/config/torrent.config';
+import { cache } from '@/pages/api/config/torrent.config';
 import { apiResponse } from '@/pages/utils/response.utils';
 
 export const getFileInfo = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {

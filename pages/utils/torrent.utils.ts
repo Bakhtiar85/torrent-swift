@@ -1,7 +1,7 @@
 // utils/torrent.utils.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
-import { mimeTypes } from '../config/torrent.config';
+import { mimeTypes } from '../api/config/torrent.config';
 
 export const upload = multer({ storage: multer.memoryStorage() });
 

@@ -1,7 +1,7 @@
 // pages/api/torrent/handlers/cancel.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { TaskInfo } from '@/types';
-import { cache, client } from '@/pages/config/torrent.config';
+import { cache, client } from '@/pages/api/config/torrent.config';
 import { apiResponse } from '@/pages/utils/response.utils';
 
 export const cancelTask = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {

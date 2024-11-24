@@ -1,9 +1,9 @@
 // pages/api/torrent/handlers/stream.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { TaskInfo } from '@/types';
-import { cache, client, torrentBuffers } from '@/pages/config/torrent.config';
+import { cache, client, torrentBuffers } from '@/pages/api/config/torrent.config';
+import { recoverTorrent } from '@/pages/api/services/torrent.service';
 import { getMimeType } from '@/pages/utils/torrent.utils';
-import { recoverTorrent } from '@/pages/services/torrent.service';
 import { apiResponse } from '@/pages/utils/response.utils';
 
 export const streamFile = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
