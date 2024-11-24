@@ -1,6 +1,5 @@
 // app/components/modals/TourGuide.tsx
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { CallBackProps, Step } from "react-joyride";
 import Joyride, { EVENTS, STATUS } from "react-joyride";
 import { State as OriginalJoyState, TourGuideProps } from "@/types";
@@ -9,28 +8,23 @@ import tourGuideData from "@/public/data/guid.json";
 interface State extends OriginalJoyState {
     steps: Step[];
 }
-type CustomStep = {
-    title: string;
-    placement: any;
-    description: string;
-    target: string;
-};
+
 const TourGuide = ({ start, setStartTour, onTourEnd }: TourGuideProps) => {
     const [progress, setProgress] = useState<number>(1);
 
-    const generateSteps = (val: number): Step[] => tourGuideData?.map((step: any, index: number) => ({
-        title: step.title,
-        content: (
-            <div key={index} >
-                <p className="text-sm">{step.description}</p>
-                <div className="absolute bottom-[30px] left-1/4 right-1/4 z-0 text-center text-xs text-neutral-400">
-                    {val} of {tourGuideData.length}
+    const generateSteps = (val: number): Step[] =>
+        tourGuideData?.map((step: any, index: number) => ({
+            title: step.title,
+            content: (
+                <div key={index} >
+                    <p className="text-sm">{step.description}</p>
+                    <div className="absolute bottom-[30px] left-1/4 right-1/4 z-0 text-center text-xs text-neutral-400">
+                        {val} of {tourGuideData.length}
+                    </div>
                 </div>
-            </div>
-        ),
-        target: step.target
-    }));
-
+            ),
+            target: step.target
+        }));
 
     const [{ run, steps }, setState] = useState<State>({
         run: start,
@@ -80,17 +74,16 @@ const TourGuide = ({ start, setStartTour, onTourEnd }: TourGuideProps) => {
             disableCloseOnEsc
             disableOverlayClose
             spotlightPadding={10}
-            // showProgress
             showSkipButton
             debug
             styles={{
                 overlay: {
                     border: "2px solid #3b82f6bf",
-                    maxHeight: "100%"
+                    maxHeight: "100%",
                 },
                 spotlight: {
                     border: "1px solid #3b82f6bf",
-                    maxWidth: "100%"
+                    maxWidth: "100%",
                 },
                 buttonNext: {
                     outline: "2px solid transparent",

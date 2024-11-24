@@ -25,7 +25,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-3 sm:p-4 md:p-10 md:pt-3 bg-gray-900 text-white">
+    <main className="flex min-h-screen flex-col items-center justify-between p-1 sm:p-4 md:p-10 md:pt-3 bg-gray-900 text-white">
       <div className="z-10 w-full text-center font-serif p-3 sm:pb-3.5 tracking-wider shadow-md flex flex-col lg:flex-row justify-evenly items-center">
         <div className="flex justify-center items-center gap-2.5">
           <span className='rotate-12 pb-2.5'>

@@ -21,13 +21,5 @@ export const mimeTypes: { [key: string]: string } = {
     'default': 'application/octet-stream'
 };
 
-// API configuration
-export const apiConfig = {
-    api: {
-        bodyParser: false,
-        responseLimit: false,
-    },
-};
-
 // Store torrent buffers for potential reuse
 export const torrentBuffers = new Map<string, Buffer>();

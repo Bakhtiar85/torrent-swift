@@ -1,13 +1,17 @@
 // pages/api/torrent/stream.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { apiConfig } from '@/pages/config/torrent.config';
 import { handleTorrentUpload } from './handlers/upload';
 import { streamFile } from './handlers/stream';
 import { getFileInfo, handleProgressCheck } from './handlers/info';
 import { cancelTask } from './handlers/cancel';
 import { apiResponse } from '@/pages/utils/response.utils';
 
-export const config = apiConfig;
+export const config = {
+    api: {
+        bodyParser: false,
+        responseLimit: false,
+    },
+};
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     try {

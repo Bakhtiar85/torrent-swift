@@ -40,6 +40,14 @@ const TorrentDownloader: React.FC = () => {
                 />
             )}
 
+            {isUploading && !taskId &&
+                (
+                    <p className="text-sm sm:text-lg lg:text-xl text-transparent bg-gradient-to-r from-white from-10% to-blue-800 bg-clip-text xl:-mt-1.5 italic">
+                        Kindly Wait, Working On Your Request!
+                    </p>
+                )
+            }
+
             {taskId && (
                 <ProgressControls
                     isProgressButtonDisabled={isProgressButtonDisabled}
