@@ -3,14 +3,19 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { TaskInfo } from '@/types';
 import { cache, client, torrentBuffers } from '@/pages/config/torrent.config';
 import { getMimeType } from '@/pages/utils/torrent.utils';
-import { cleanupTorrent, recoverTorrent } from '@/pages/services/torrent.service';
+import { recoverTorrent } from '@/pages/services/torrent.service';
+import { apiResponse } from '@/pages/utils/response.utils';
 
 export const streamFile = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     const { infoHash, fileIndex } = req.query;
 
     if (!infoHash || typeof infoHash !== 'string' || !fileIndex || typeof fileIndex !== 'string') {
-        res.status(400).json({ error: 'Invalid infoHash or fileIndex' });
-        return;
+        return apiResponse(res, {
+            success: false,
+            statusCode: 400,
+            message: 'Invalid infoHash or fileIndex',
+            error: 'Invalid infoHash or fileIndex',
+        });
     }
 
     console.log(`Attempting to stream file. InfoHash: ${infoHash}, FileIndex: ${fileIndex}`);
@@ -23,13 +28,21 @@ export const streamFile = async (req: NextApiRequest, res: NextApiResponse): Pro
             await recoverTorrent(infoHash, torrentBuffers.get(infoHash)!);
             const recoveredTask = cache.get(infoHash) as TaskInfo;
             if (!recoveredTask) {
-                res.status(404).json({ error: 'Task not found and recovery failed' });
-                return;
+                return apiResponse(res, {
+                    success: false,
+                    statusCode: 404,
+                    message: 'Task not found and recovery failed',
+                    error: 'Task not found and recovery failed',
+                });
             }
             task = recoveredTask;
         } else {
-            res.status(404).json({ error: 'Task not found and no recovery possible' });
-            return;
+            return apiResponse(res, {
+                success: false,
+                statusCode: 404,
+                message: 'Task not found and no recovery possible',
+                error: 'Task not found and no recovery possible',
+            });
         }
     }
 
@@ -40,28 +53,41 @@ export const streamFile = async (req: NextApiRequest, res: NextApiResponse): Pro
             await recoverTorrent(infoHash, torrentBuffers.get(infoHash)!);
             torrent = await client.get(task.infoHash);
             if (!torrent) {
-                res.status(404).json({ error: 'Torrent not found and recovery failed' });
-                return;
+                return apiResponse(res, {
+                    success: false,
+                    statusCode: 404,
+                    message: 'Torrent not found and recovery failed',
+                    error: 'Torrent not found and recovery failed',
+                });
             }
         } else {
-            res.status(404).json({ error: 'Torrent not found and no recovery possible' });
-            return;
+            return apiResponse(res, {
+                success: false,
+                statusCode: 404,
+                message: 'Torrent not found and no recovery possible',
+                error: 'Torrent not found and no recovery possible',
+            });
         }
     }
 
     const fileIdx = parseInt(fileIndex, 10);
     if (isNaN(fileIdx) || fileIdx < 0 || fileIdx >= torrent.files.length) {
-        res.status(400).json({
-            error: 'Invalid file index',
-            details: `File index must be between 0 and ${torrent.files.length - 1}`
+        return apiResponse(res, {
+            success: false,
+            statusCode: 400,
+            message: 'Invalid file index',
+            error: `File index must be between 0 and ${torrent.files.length - 1}`,
         });
-        return;
     }
 
     const file = torrent.files[fileIdx];
     if (!file) {
-        res.status(404).json({ error: 'File not found in torrent' });
-        return;
+        return apiResponse(res, {
+            success: false,
+            statusCode: 404,
+            message: 'File not found in torrent',
+            error: 'File not found in torrent',
+        });
     }
 
     console.log(`Streaming file: ${file.name}, Size: ${file.length}`);
@@ -104,10 +130,12 @@ export const streamFile = async (req: NextApiRequest, res: NextApiResponse): Pro
             // }
         });
     } catch (error) {
-        console.error('Streaming error:', error);
-        res.status(500).json({
-            error: 'Streaming error',
-            details: error instanceof Error ? error.message : 'Unknown streaming error'
+        console.error('handlers/stream.ts::133 error:', error);
+        return apiResponse(res, {
+            success: false,
+            statusCode: 500,
+            message: 'Streaming error',
+            error: error instanceof Error ? error.message : 'Unknown streaming error',
         });
     }
 };

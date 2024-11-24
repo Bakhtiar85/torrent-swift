@@ -78,3 +78,10 @@ export interface FileListTableProps {
     files: TorrentFile[];
     handleFileDownload: (fileIndex: number) => Promise<void>;
 }
+
+export interface ApiResponse<T = null> {
+    success: boolean; // Indicates if the request succeeded
+    message: string;  // Human-readable message
+    error?: string;   // Error details (optional, only for failed responses)
+    data?: T;         // Data payload (optional, only for successful responses)
+}

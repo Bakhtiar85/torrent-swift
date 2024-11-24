@@ -5,6 +5,7 @@ import { handleTorrentUpload } from './handlers/upload';
 import { streamFile } from './handlers/stream';
 import { getFileInfo, handleProgressCheck } from './handlers/info';
 import { cancelTask } from './handlers/cancel';
+import { apiResponse } from '@/pages/utils/response.utils';
 
 export const config = apiConfig;
 
@@ -31,13 +32,20 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                 console.log('cancelTask::> Req:', req.query);
                 return await cancelTask(req, res);
             default:
-                return res.status(405).json({ error: 'Method not allowed' });
+                return apiResponse(res, {
+                    success: false,
+                    statusCode: 405,
+                    message: 'Method not allowed',
+                    error: 'Method not allowed',
+                });;
         }
     } catch (error) {
-        console.error('API handler error:', error);
-        return res.status(500).json({
-            error: 'Internal server error',
-            details: error instanceof Error ? error.message : 'Unknown error'
+        console.error('stream.ts::43 error:', error);
+        return apiResponse(res, {
+            success: false,
+            statusCode: 500,
+            message: 'Internal server error',
+            error: error instanceof Error ? error.message : 'Unknown error',
         });
     }
 };

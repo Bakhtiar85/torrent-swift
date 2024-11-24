@@ -53,13 +53,19 @@ export const useTorrentUpload = (): UseTorrentUploadReturn => {
                     }),
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                setTaskId(data.infoHash);
-                localStorage.setItem('torrentInfoHash', data.infoHash);
+            const APIResponse = await response.json();
+            console.log(APIResponse)
+            if (response.ok && APIResponse.success) {
+                let { infoHash } = APIResponse.data;
+                setTaskId(infoHash);
+                localStorage.setItem('torrentInfoHash', infoHash);
+            } else {
+                console.error('Upload failed:', APIResponse.error || APIResponse.message);
+                alert(`Error: ${APIResponse.message || 'Upload failed'}`);
             }
         } catch (error) {
             console.error('Error during upload:', error);
+            alert('An error occurred during the upload');
         } finally {
             setIsUploading(false);
         }

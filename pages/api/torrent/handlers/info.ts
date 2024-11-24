@@ -2,30 +2,53 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { TaskInfo } from '@/types';
 import { cache } from '@/pages/config/torrent.config';
+import { apiResponse } from '@/pages/utils/response.utils';
 
 export const getFileInfo = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     const { infoHash, fileIndex } = req.query;
 
     if (!infoHash || typeof infoHash !== 'string') {
-        res.status(400).json({ error: 'Invalid request' });
-        return;
+        return apiResponse(res, {
+            success: false,
+            statusCode: 400,
+            message: 'Invalid request',
+            error: 'Invalid request',
+        });
     }
 
     const task = cache.get(infoHash) as TaskInfo;
     if (!task) {
-        res.status(404).json({ error: 'Task not found' });
-        return;
+        return apiResponse(res, {
+            success: false,
+            statusCode: 404,
+            message: 'Task not found',
+            error: 'Task not found',
+        });
     }
 
     if (fileIndex && typeof fileIndex === 'string') {
         const file = task.files[parseInt(fileIndex, 10)];
         if (!file) {
-            res.status(404).json({ error: 'File not found' });
-            return;
+            return apiResponse(res, {
+                success: false,
+                statusCode: 404,
+                message: 'File not found',
+                error: 'File not found',
+            });
         }
-        res.status(200).json({ file });
+        return apiResponse(res, {
+            success: true,
+            statusCode: 200,
+            message: 'File info retrieved successfully',
+            data: { file },
+        });
     } else {
-        res.status(200).json({ task });
+        return apiResponse(res, {
+            success: true,
+            statusCode: 200,
+            message: 'Task info retrieved successfully',
+            data: { task },
+        });
     }
 };
 
@@ -33,19 +56,31 @@ export const handleProgressCheck = async (req: NextApiRequest, res: NextApiRespo
     const { infoHash } = req.query;
 
     if (!infoHash || typeof infoHash !== 'string') {
-        res.status(400).json({ error: 'Invalid request' });
-        return;
+        return apiResponse(res, {
+            success: false,
+            statusCode: 400,
+            message: 'Invalid request',
+            error: 'Invalid request',
+        });
     }
 
     const task = cache.get(infoHash) as TaskInfo;
     if (!task) {
-        res.status(404).json({ error: 'Task not found' });
-        return;
+        return apiResponse(res, {
+            success: false,
+            statusCode: 404,
+            message: 'Task not found',
+            error: 'Task not found',
+        });
     }
 
-    res.status(200).json({
-        status: 'success',
-        progress: task.progress,
-        files: task.files
+    return apiResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: 'Task info retrieved successfully',
+        data: {
+            progress: task.progress,
+            files: task.files,
+        },
     });
 };

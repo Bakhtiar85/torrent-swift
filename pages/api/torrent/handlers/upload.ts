@@ -5,6 +5,7 @@ import { TaskInfo } from '@/types';
 import { cache, client } from '@/pages/config/torrent.config';
 import { formatBytes, getMimeType, runMiddleware, upload } from '@/pages/utils/torrent.utils';
 import { setupTorrentHandlers } from '@/pages/services/torrent.service';
+import { apiResponse } from '@/pages/utils/response.utils';
 
 export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
     try {
@@ -25,7 +26,12 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
         const magnetLink = body.magnetLink;
 
         if (!torrentFile && !magnetLink) {
-            return res.status(400).json({ error: 'Please provide a torrent file or a magnet link.' });
+            return apiResponse(res, {
+                success: false,
+                statusCode: 400,
+                message: 'Invalid upload request',
+                error: 'Please provide a torrent file or a magnet link',
+            });
         }
 
         console.log(`Processing ${torrentFile ? 'file' : 'magnet link'}`);
@@ -54,11 +60,16 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
 
         if (existingTask) {
             const existingTaskInfo = cache.get(existingTask) as TaskInfo;
-            return res.status(200).json({
-                infoHash,
-                name: existingTaskInfo.name,
-                files: existingTaskInfo.files,
-                status: 'already_exists'
+            return apiResponse(res, {
+                success: true,
+                statusCode: 200,
+                message: 'Torrent already exists',
+                data: {
+                    infoHash,
+                    name: existingTaskInfo.name,
+                    files: existingTaskInfo.files,
+                    status: 'already_exists',
+                },
             });
         }
 
@@ -87,18 +98,28 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
             cache.set(infoHash, taskInfo);
             setupTorrentHandlers(torrent, infoHash);
 
-            res.status(200).json({
-                infoHash,
-                name: torrent.name,
-                files: taskInfo.files.map((file) => ({
-                    name: file.name,
-                    size: formatBytes(file.length),
-                    mime: file.mime,
-                })),
+            return apiResponse(res, {
+                success: true,
+                statusCode: 200,
+                message: 'Torrent uploaded successfully',
+                data: {
+                    infoHash,
+                    name: torrent.name,
+                    files: taskInfo.files.map((file) => ({
+                        name: file.name,
+                        size: formatBytes(file.length),
+                        mime: file.mime,
+                    })),
+                },
             });
         });
     } catch (error) {
         console.error('Error in handleTorrentUpload:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        return apiResponse(res, {
+            success: false,
+            statusCode: 500,
+            message: 'Streaming error',
+            error: error instanceof Error ? error.message : 'Unknown streaming error',
+        });
     }
 };

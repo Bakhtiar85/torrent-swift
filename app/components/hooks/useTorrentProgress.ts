@@ -22,19 +22,26 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
                     'Content-Type': 'application/json',
                 },
             });
-            const data = await response.json();
+            const APIResponse = await response.json();
+            console.log(APIResponse)
+            if (response.ok && APIResponse.success) {
+                let { progress, files } = APIResponse.data;
+                if (!isNaN(progress)) {
+                    setProgress(progress);
+                }
 
-            if (!isNaN(data.progress)) {
-                setProgress(data.progress);
-            }
+                setFiles(files || []);
 
-            setFiles(data.files || []);
-
-            if (data.progress === 100) {
-                randomTimeout = 2;
+                if (progress === 100) {
+                    randomTimeout = 2;
+                }
+            } else {
+                console.error('Progress check failed:', APIResponse.error || APIResponse.message);
+                alert(`Error: ${APIResponse.message || 'Progress check failed'}`);
             }
         } catch (error) {
             console.error('Error fetching progress:', error);
+            alert('An error occurred while fetching progress');
         } finally {
             setIsProgressButtonDisabled(randomTimeout);
 
@@ -60,11 +67,13 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
                     'Content-Type': 'application/json',
                 },
             });
-            if (!checkResponse.ok) {
-                throw new Error('File not available');
+            const APIResponse = await checkResponse.json();
+            console.log(APIResponse)
+            if (checkResponse.ok && APIResponse.success) {
+                window.location.href = `/api/torrent/stream?infoHash=${taskId}&fileIndex=${fileIndex}`;
+            } else {
+                throw new Error(APIResponse.error || APIResponse.message || 'File not available');
             }
-
-            window.location.href = `/api/torrent/stream?infoHash=${taskId}&fileIndex=${fileIndex}`;
         } catch (error) {
             console.error('Download error:', error);
             alert('Download failed. Please try uploading the torrent file again.');
