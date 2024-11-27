@@ -1,11 +1,12 @@
 // app/components/torrent/index.tsx
 'use client';
-import React from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { useTorrentProgress } from '../hooks/useTorrentProgress';
 import { useTorrentUpload } from '../hooks/useTorrentUpload';
 import UploadForm from './modules/UploadForm';
-import FileListTable from './modules/FileListTable';
-import ProgressControls from './modules/ProgressControls';
+
+const FileListTable = lazy(() => import('./modules/FileListTable'));
+const ProgressControls = lazy(() => import('./modules/ProgressControls'));
 
 const TorrentDownloader: React.FC = () => {
     const {
@@ -49,11 +50,13 @@ const TorrentDownloader: React.FC = () => {
             }
 
             {taskId && (
-                <ProgressControls
-                    isProgressButtonDisabled={isProgressButtonDisabled}
-                    handleProgressCheck={handleProgressCheck}
-                    progressResetCancel={progressResetCancel}
-                />
+                <Suspense fallback={<p>Loading progress controls...</p>}>
+                    <ProgressControls
+                        isProgressButtonDisabled={isProgressButtonDisabled}
+                        handleProgressCheck={handleProgressCheck}
+                        progressResetCancel={progressResetCancel}
+                    />
+                </Suspense>
             )}
 
             {files.length > 0 && (
@@ -61,7 +64,12 @@ const TorrentDownloader: React.FC = () => {
                     <h3 className="text-base lg:text-lg font-medium text-gray-300 mb-3 sm:mb-4 tracking-wide shadow-md">
                         Setting up your files!
                     </h3>
-                    <FileListTable files={files} handleFileDownload={handleFileDownload} />
+                    <Suspense fallback={<p>Loading file list...</p>}>
+                        <FileListTable
+                            files={files}
+                            handleFileDownload={handleFileDownload}
+                        />
+                    </Suspense>
                 </div>
             )}
         </div>
