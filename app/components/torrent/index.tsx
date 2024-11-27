@@ -1,6 +1,6 @@
 // app/components/torrent/index.tsx
 'use client';
-import React, { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useTorrentProgress } from '../hooks/useTorrentProgress';
 import { useTorrentUpload } from '../hooks/useTorrentUpload';
 import UploadForm from './modules/UploadForm';

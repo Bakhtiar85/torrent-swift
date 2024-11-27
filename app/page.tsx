@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useState } from 'react';
-import HomePage from './components/torrent'
-import TourGuide from './components/modals/TourGuide';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { siteLogo } from '@/public/assets/svgIcons';
+
+const HomePage = lazy(() => import('./components/torrent'));
+const TourGuide = lazy(() => import('./components/modals/TourGuide'));
 
 export default function Home() {
   const [startTour, setStartTour] = useState(true);
@@ -43,9 +44,11 @@ export default function Home() {
             </button>
           </div>
 
-          {startTour && (
-            <TourGuide start={startTour} setStartTour={setStartTour} onTourEnd={handleTourEnd} />
-          )}
+          <Suspense fallback={<p>Loading Site...</p>}>
+            {startTour && (
+              <TourGuide start={startTour} setStartTour={setStartTour} onTourEnd={handleTourEnd} />
+            )}
+          </Suspense>
 
         </div>
 
