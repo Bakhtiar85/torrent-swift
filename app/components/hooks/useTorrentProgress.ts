@@ -36,6 +36,7 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
                     randomTimeout = 2;
                 }
             } else {
+                randomTimeout = 4;
                 console.error('Progress check failed:', APIResponse.error || APIResponse.message);
                 alert(`Error: ${APIResponse.message || 'Progress check failed'}`);
             }
