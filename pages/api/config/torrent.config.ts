@@ -1,4 +1,4 @@
-// config/torrent.config.ts
+// pages/api/config/torrent.config.ts
 import NodeCache from 'node-cache';
 import * as WebTorrent from 'webtorrent';
 

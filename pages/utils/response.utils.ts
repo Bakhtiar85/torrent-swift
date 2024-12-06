@@ -1,4 +1,4 @@
-// utils/response.utils.ts
+// pages/utils/response.utils.ts
 import { NextApiResponse } from 'next';
 import { ApiResponse } from '@/types';
 

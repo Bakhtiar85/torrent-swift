@@ -1,4 +1,4 @@
-// services/torrent.service.ts
+// pages/api/services/torrent.service.ts
 import { TaskInfo } from '@/types';
 import { cache, client, torrentBuffers } from '../config/torrent.config';
 import { getMimeType } from '../../utils/torrent.utils';

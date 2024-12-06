@@ -1,4 +1,4 @@
-// utils/torrent.utils.ts
+// pages/utils/torrent.utils.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
 import { mimeTypes } from '../api/config/torrent.config';
