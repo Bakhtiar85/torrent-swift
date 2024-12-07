@@ -4,7 +4,7 @@ import { handleTorrentUpload } from './handlers/upload';
 import { streamFile } from './handlers/stream';
 import { getFileInfo, handleProgressCheck } from './handlers/info';
 import { cancelTask } from './handlers/cancel';
-import { apiResponse } from '@/pages/utils/response.utils';
+import { apiResponse } from '../utils/response.utils';
 
 export const config = {
     api: {

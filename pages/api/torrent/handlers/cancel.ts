@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { TaskInfo } from '@/types';
 import { cache, client } from '@/pages/api/config/torrent.config';
-import { apiResponse } from '@/pages/utils/response.utils';
+import { apiResponse } from '../../utils/response.utils';
 
 export const cancelTask = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     const { infoHash } = req.query;

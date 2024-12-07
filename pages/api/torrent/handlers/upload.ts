@@ -4,8 +4,8 @@ import * as WebTorrent from 'webtorrent';
 import { TaskInfo } from '@/types';
 import { cache, client } from '@/pages/api/config/torrent.config';
 import { setupTorrentHandlers } from '@/pages/api/services/torrent.service';
-import { formatBytes, getMimeType, runMiddleware, upload } from '@/pages/utils/torrent.utils';
-import { apiResponse } from '@/pages/utils/response.utils';
+import { formatBytes, getMimeType, runMiddleware, upload } from '../../utils/torrent.utils';
+import { apiResponse } from '../../utils/response.utils';
 
 export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
     try {

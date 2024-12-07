@@ -1,7 +1,7 @@
 // pages/api/services/torrent.service.ts
 import { TaskInfo } from '@/types';
 import { cache, client, torrentBuffers } from '../config/torrent.config';
-import { getMimeType } from '../../utils/torrent.utils';
+import { getMimeType } from '../utils/torrent.utils';
 import * as WebTorrent from 'webtorrent';
 
 export const updateProgress = (torrent: WebTorrent.Torrent, infoHash: string): void => {

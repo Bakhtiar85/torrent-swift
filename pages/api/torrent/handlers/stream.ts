@@ -3,8 +3,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { TaskInfo } from '@/types';
 import { cache, client, torrentBuffers } from '@/pages/api/config/torrent.config';
 import { recoverTorrent } from '@/pages/api/services/torrent.service';
-import { getMimeType } from '@/pages/utils/torrent.utils';
-import { apiResponse } from '@/pages/utils/response.utils';
+import { getMimeType } from '../../utils/torrent.utils';
+import { apiResponse } from '../../utils/response.utils';
 
 export const streamFile = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
     const { infoHash, fileIndex } = req.query;
