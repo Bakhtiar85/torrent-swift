@@ -52,7 +52,7 @@ export interface TorrentMetadata {
 }
 
 export interface ZipInfo {
-    infoHash: string;
+    info_hash: string;
     name: string;
     size: number;
     status: string;

@@ -31,7 +31,7 @@ const ZipList: React.FC<ZipListProps> = ({ zips, onDownload, isLoading }) => {
                         </thead>
                         <tbody className="divide-y divide-gray-700">
                             {zips.map((zip) => (
-                                <tr key={zip.infoHash}>
+                                <tr key={zip.info_hash}>
                                     <td className="px-4 py-3 text-sm text-gray-300">{zip.name}</td>
                                     <td className="px-4 py-3 text-sm text-gray-300">
                                         {(zip.size / (1024 * 1024)).toFixed(2)} MB
@@ -41,7 +41,7 @@ const ZipList: React.FC<ZipListProps> = ({ zips, onDownload, isLoading }) => {
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         <button
-                                            onClick={() => onDownload(zip.infoHash)}
+                                            onClick={() => onDownload(zip.info_hash)}
                                             className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
                                         >
                                             Download

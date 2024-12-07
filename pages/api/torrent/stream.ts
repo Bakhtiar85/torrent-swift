@@ -5,6 +5,7 @@ import { streamFile } from './handlers/stream';
 import { getFileInfo, handleProgressCheck } from './handlers/info';
 import { cancelTask } from './handlers/cancel';
 import { apiResponse } from '../utils/response.utils';
+import { downloadZip } from './handlers/download';
 
 export const config = {
     api: {
@@ -30,7 +31,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                     return await getFileInfo(req, res);
                 } else {
                     console.log('handleProgressCheck::> Req:', req.query);
-                    return await handleProgressCheck(req, res);
+                    if (req.query.download) {
+                        await downloadZip(req, res);
+                    } else {
+                        return await handleProgressCheck(req, res);
+                    }
                 }
             case 'DELETE':
                 console.log('cancelTask::> Req:', req.query);

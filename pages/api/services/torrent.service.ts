@@ -5,7 +5,7 @@ import { cache, client, torrentBuffers } from '../config/torrent.config';
 import { getMimeType } from '../utils/torrent.utils';
 import { createTorrentZip } from '../utils/zip.utils';
 import * as WebTorrent from 'webtorrent';
-import { getDb } from '../config/db/index.config';
+import { initDb, getDb } from '../config/db/index.config';
 
 export const updateProgress = (torrent: WebTorrent.Torrent, infoHash: string): void => {
     const taskInfo = cache.get(infoHash) as TaskInfo;
@@ -43,9 +43,10 @@ export const setupTorrentHandlers = (torrent: WebTorrent.Torrent, infoHash: stri
         console.log(`Torrent download completed for task ${infoHash}`);
         clearInterval(progressInterval);
         updateProgress(torrent, infoHash);
-        
+
         try {
             await handleTorrentCompletion(torrent, infoHash);
+            // await cleanupTorrent(infoHash);
         } catch (error) {
             console.error('Error handling torrent completion:', error);
         }
@@ -120,6 +121,8 @@ export const recoverTorrent = async (infoHash: string, buffer: Buffer): Promise<
 
 export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoHash: string) {
     try {
+        await initDb(); // Ensure the database and table are initialized before querying
+
         const db = await getDb();
         // Convert WebTorrent files to your TorrentFile type
         const torrentFiles: TorrentFile[] = torrent.files.map(file => ({
@@ -131,19 +134,29 @@ export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoH
             mime: getMimeType(file.name),
             streamReady: file.progress > 0.1
         }));
-        
+
         const zipPath = await createTorrentZip(infoHash, torrentFiles);
         const zipStats = await fs.stat(zipPath);
         
         await db.run(
-            `UPDATE torrent_vault 
-             SET status = 'zipped', 
-                 zip_path = ?, 
-                 zip_size = ?
-             WHERE info_hash = ?`,
-            zipPath, zipStats.size, infoHash
+            `INSERT INTO torrent_vault (
+                info_hash, 
+                name, 
+                size, 
+                file_count, 
+                status, 
+                zip_path, 
+                zip_size
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            infoHash,
+            torrent.name,
+            torrent.length,
+            torrent.files.length,
+            'zipped',
+            zipPath,
+            zipStats.size
         );
-        
+
         return zipPath;
     } catch (error) {
         console.error('Error in handleTorrentCompletion:', error);

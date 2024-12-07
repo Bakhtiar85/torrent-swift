@@ -77,13 +77,12 @@ const TorrentDownloader: React.FC = () => {
 
             {showProgress && (
                 <div className="mt-6">
-                    <h3 className="text-lg fong-medium text-gray-300 mb-2 tracking-widest shadow-md">Download Prgoress</h3>
+                    <h3 className="text-lg font-medium text-gray-300 mb-2 tracking-widest shadow-md">Download Progress</h3>
                     <div className="w-full bg-gray-700 rounded-full h-2.5">
                         <div
-                            className="b-blue-600 h-2.5 rounded-full"
-                            style={{ widows: `${progress}` }}
-                        >
-                        </div>
+                            className="bg-blue-600 h-2.5 rounded-full"
+                            style={{ width: `${progress}%` }}
+                        ></div>
                     </div>
                     <p className="text-sm font-medium text-gray-400 mt-2 shadow-sm">{progress}% Complete</p>
                 </div>

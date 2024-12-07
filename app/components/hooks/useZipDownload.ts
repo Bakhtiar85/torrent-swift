@@ -28,7 +28,7 @@ export const useZipDownload = (): UseZipDownloadReturn => {
         }
     };
 
-    const downloadZip = async (infoHash: string) => {
+    const downloadZip = async (infoHash: string="c9e15763f722f23e98a29decdfae341b98d53056") => {
         try {
             const response = await fetch(`/api/torrent/stream?infoHash=${infoHash}&download=true`);
             

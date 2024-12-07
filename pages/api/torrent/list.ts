@@ -1,6 +1,6 @@
 // pages/api/torrent/list.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getDb } from '../config/db/index.config';
+import { initDb, getDb } from '../config/db/index.config';
 import { apiResponse } from '../utils/response.utils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -13,6 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+        await initDb(); // Ensure the database and table are initialized before querying
+
         const db = await getDb();
         const torrents = await db.all(`
             SELECT info_hash, name, size, file_count, category, 
