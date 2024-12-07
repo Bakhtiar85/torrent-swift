@@ -38,6 +38,19 @@ export interface TourGuideProps {
     onTourEnd: () => void;
 }
 
+export interface TorrentMetadata {
+    name: string;
+    infoHash: string;
+    size: number;
+    fileCount: number;
+    category?: string;
+    files: TorrentFile[];
+    uploadDate: Date;
+    zipPath?: string;
+    zipSize?: number;
+    status: 'downloading' | 'completed' | 'zipped' | 'error';
+}
+
 /************************************************ FILES INTERFACES *********************************************/
 
 export interface UseTorrentProgressReturn {
