@@ -136,7 +136,7 @@ export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoH
         const zipStats = await fs.stat(zipPath);
         
         await db.run(
-            `UPDATE torrents 
+            `UPDATE torrent_vault 
              SET status = 'zipped', 
                  zip_path = ?, 
                  zip_size = ?

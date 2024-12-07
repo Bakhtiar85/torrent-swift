@@ -20,7 +20,7 @@ export const downloadZip = async (req: NextApiRequest, res: NextApiResponse): Pr
     try {
         const db = await getDb();
         const torrent = await db.get(
-            'SELECT zip_path, name FROM torrents WHERE info_hash = ? AND status = ?',
+            'SELECT zip_path, name FROM torrent_vault WHERE info_hash = ? AND status = ?',
             [infoHash, 'zipped']
         );
 

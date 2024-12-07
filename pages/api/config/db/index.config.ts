@@ -8,7 +8,7 @@ const DB_PATH = path.join(process.cwd(), 'data');
 
 export async function getDb() {
     return open({
-        filename: path.join(DB_PATH, 'torrent-vault.db'),
+        filename: path.join(DB_PATH, 'torrent_vault.db'),
         driver: sqlite3.Database
     });
 }
@@ -16,7 +16,7 @@ export async function initDb() {
     const db = await getDb();
     
     await db.exec(`
-        CREATE TABLE IF NOT EXISTS torrent-vault (
+        CREATE TABLE IF NOT EXISTS torrent_vault (
             info_hash TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             size BIGINT NOT NULL,

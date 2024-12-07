@@ -51,6 +51,22 @@ export interface TorrentMetadata {
     status: 'downloading' | 'completed' | 'zipped' | 'error';
 }
 
+export interface ZipInfo {
+    infoHash: string;
+    name: string;
+    size: number;
+    status: string;
+    uploadDate: string;
+}
+
+export interface UseZipDownloadReturn {
+    availableZips: ZipInfo[];
+    isLoading: boolean;
+    error: string | null;
+    downloadZip: (infoHash: string) => Promise<void>;
+    refreshZipList: () => Promise<void>;
+}
+
 /************************************************ FILES INTERFACES *********************************************/
 
 export interface UseTorrentProgressReturn {

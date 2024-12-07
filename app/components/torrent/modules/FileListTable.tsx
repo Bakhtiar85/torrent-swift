@@ -46,7 +46,7 @@ const FileListTable: React.FC<FileListTableProps> = ({ files, handleFileDownload
                                 <th className="w-4 md:w-8 px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider">#</th>
                                 <th className="w-[50%] md:w-[45%] px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider">File</th>
                                 <th className="hidden md:table-cell w-[50%] md:w-[30%] px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider truncate">Progress</th>
-                                <th className="w-20 md:w-[120px] px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider truncate">Actions</th>
+                                <th className="hidden w-20 md:w-[120px] px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider truncate">Actions</th>
                             </tr>
                         </thead>
                     </table>
@@ -129,7 +129,7 @@ const FileListTable: React.FC<FileListTableProps> = ({ files, handleFileDownload
                                             </div>
                                         )}
                                     </td>
-                                    <td className="w-20 md:w-[120px] px-4 py-4">
+                                    <td className="hidden w-20 md:w-[120px] px-4 py-4">
                                         <button
                                             onClick={() => handleFileDownload(index)}
                                             disabled={file.progress !== 100 || downloadingStates[index]}
