@@ -125,7 +125,14 @@ export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoH
 
         const db = await getDb();
         // Convert WebTorrent files to your TorrentFile type
-        const torrentFiles: TorrentFile[] = torrent.files.map(file => ({
+        // Retrieve the task from the cache
+        const task = cache.get(infoHash) as TaskInfo;
+        if (!task) {
+            throw new Error('Task not found in cache');
+        }
+
+        // Convert files from the task (node cache) to TorrentFile type
+        const torrentFiles: TorrentFile[] = task.files.map(file => ({
             name: file.name,
             length: file.length,
             downloaded: file.downloaded,
@@ -137,7 +144,7 @@ export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoH
 
         const zipPath = await createTorrentZip(infoHash, torrentFiles);
         const zipStats = await fs.stat(zipPath);
-        
+
         await db.run(
             `INSERT INTO torrent_vault (
                 info_hash, 

@@ -3,12 +3,10 @@
 import React, { lazy, Suspense } from 'react';
 import { useTorrentProgress } from '../hooks/useTorrentProgress';
 import { useTorrentUpload } from '../hooks/useTorrentUpload';
-import { useZipDownload } from '../hooks/useZipDownload';
 import UploadForm from './modules/UploadForm';
 
 const FileListTable = lazy(() => import('./modules/FileListTable'));
 const ProgressControls = lazy(() => import('./modules/ProgressControls'));
-const ZipList = lazy(() => import('./modules/ZipList'));
 
 const TorrentDownloader: React.FC = () => {
     const {
@@ -30,20 +28,6 @@ const TorrentDownloader: React.FC = () => {
         handleFileDownload,
         progressResetCancel,
     } = useTorrentProgress(taskId);
-
-    const {
-        availableZips,
-        isLoading: isLoadingZips,
-        error: zipError,
-        downloadZip,
-        refreshZipList,
-    } = useZipDownload();
-
-    React.useEffect(() => {
-        if (progress === 100) {
-            refreshZipList();
-        }
-    }, [progress, refreshZipList]);
 
     return (
         <div id="step-1" className="w-11/12 md:w-4/5 max-w-2xl mx-auto -mt-2 lg:-mt-0 p-4 sm:p-6 bg-gray-800 rounded-lg shadow-xl text-white transition-all duration-300 ease-in-out hover:shadow-2xl">
@@ -87,15 +71,6 @@ const TorrentDownloader: React.FC = () => {
                     <p className="text-sm font-medium text-gray-400 mt-2 shadow-sm">{progress}% Complete</p>
                 </div>
             )}
-
-            <Suspense fallback={<p>Loading downloads...</p>}>
-                <ZipList
-                    zips={availableZips}
-                    onDownload={downloadZip}
-                    isLoading={isLoadingZips}
-                />
-            </Suspense>
-
             {files.length > 0 && (
                 <div className="mt-4 sm:mt-6">
                     <h3 className="text-base lg:text-lg font-medium text-gray-300 mb-3 sm:mb-4 tracking-wide shadow-md">

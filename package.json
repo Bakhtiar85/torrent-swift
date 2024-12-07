@@ -9,8 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@types/yazl": "^2.4.5",
-    "archiver": "^7.0.1",
     "multer": "^1.4.5-lts.1",
     "next": "^14.0.4",
     "node-cache": "^5.1.2",
@@ -21,11 +19,9 @@
     "sqlite3": "^5.1.7",
     "webtorrent": "^2.5.1",
     "yauzl-promise": "^4.0.0",
-    "yazl": "^3.3.0",
     "zustand": "^5.0.1"
   },
   "devDependencies": {
-    "@types/archiver": "^6.0.3",
     "@types/multer": "^1.4.12",
     "@types/node": "^20.17.9",
     "@types/react": "^18.3.12",
