@@ -5,6 +5,7 @@ const ProgressControls: React.FC<ProgressControlsProps> = ({
     isProgressButtonDisabled,
     handleProgressCheck,
     progressResetCancel,
+    isZipReadyForDownload,
 }) => (
     <div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
@@ -17,8 +18,8 @@ const ProgressControls: React.FC<ProgressControlsProps> = ({
         <button
             id="step-5"
             onClick={handleProgressCheck}
-            disabled={isProgressButtonDisabled !== null}
-            className={`relative w-full h-8 sm:h-10 py-1.5 sm:py-2 px-3 sm:px-4 border border-transparent rounded-lg shadow-lg text-xs sm:text-sm font-medium text-white ${isProgressButtonDisabled !== null ? 'bg-green-400/75 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+            disabled={isProgressButtonDisabled !== null || isZipReadyForDownload}
+            className={`relative w-full h-8 sm:h-10 py-1.5 sm:py-2 px-3 sm:px-4 border border-transparent rounded-lg shadow-lg text-xs sm:text-sm font-medium text-white ${(isProgressButtonDisabled !== null || isZipReadyForDownload) ? 'bg-green-400/75 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 transition-all duration-200`}
         >
             {isProgressButtonDisabled !== null ? (
@@ -37,7 +38,7 @@ const ProgressControls: React.FC<ProgressControlsProps> = ({
         </p>
 
         <button
-        id="re-upload-btn"
+            id="re-upload-btn"
             onClick={progressResetCancel}
             disabled={isProgressButtonDisabled !== null}
             className={`relative w-full h-8 sm:h-10 py-1.5 sm:py-2 px-3 sm:px-4 border border-transparent rounded-lg shadow-lg text-[10px] md:text-sm font-medium text-white ${isProgressButtonDisabled !== null ? 'bg-blue-400/75 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'

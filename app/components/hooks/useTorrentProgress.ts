@@ -100,6 +100,7 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
     const resetState = () => {
         localStorage.removeItem('torrentInfoHash');
         localStorage.removeItem('torrentFileName');
+        localStorage.removeItem('torrentDownloadUrl');
         setProgress(0);
         setFiles([]);
         setShowProgress(false);

@@ -7,12 +7,19 @@ export const useTorrentUpload = (): UseTorrentUploadReturn => {
     const [magnetLink, setMagnetLink] = useState<string | null>(null);
     const [taskId, setTaskId] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState<boolean>(false);
+    const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+    const [isZipReadyForDownload, setIsZipReadyForDownload] = useState<boolean>(false);
 
     useEffect(() => {
         const savedTaskId = localStorage.getItem('torrentInfoHash');
         const savedFileName = localStorage.getItem('torrentFileName');
+        const savedDownloadUrl = localStorage.getItem('torrentDownloadUrl');
         if (savedTaskId) setTaskId(savedTaskId);
         if (savedFileName) setFile(new File([], savedFileName));
+        if (savedDownloadUrl) {
+            setDownloadUrl(savedDownloadUrl);
+            setIsZipReadyForDownload(true);
+        }
     }, []);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,6 +66,13 @@ export const useTorrentUpload = (): UseTorrentUploadReturn => {
                 let { infoHash } = APIResponse.data;
                 setTaskId(infoHash);
                 localStorage.setItem('torrentInfoHash', infoHash);
+
+                // Handle case where torrent is already downloaded and zipped
+                if (APIResponse.data.status === 'ready_for_download' && APIResponse.data.downloadUrl) {
+                    setDownloadUrl(APIResponse.data.downloadUrl);
+                    setIsZipReadyForDownload(true);
+                    localStorage.setItem('torrentDownloadUrl', APIResponse.data.downloadUrl);
+                }
             } else {
                 console.error('Upload failed:', APIResponse.error || APIResponse.message);
                 alert(`Error: ${APIResponse.message || 'Upload failed'}`);
@@ -79,5 +93,7 @@ export const useTorrentUpload = (): UseTorrentUploadReturn => {
         handleFileChange,
         handleMagnetLinkChange,
         handleUpload,
+        downloadUrl,
+        isZipReadyForDownload,
     };
 };

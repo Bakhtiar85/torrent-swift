@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';  // Use regular fs for streams
 import { promises as fsPromises } from 'fs';  // Use this for async operations
-import { getDb } from '../../config/db/index.config';
+import { initDb, getDb } from '../../config/db/index.config';
 import { apiResponse } from '../../utils/response.utils';
 
 export const downloadZip = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
@@ -18,6 +18,8 @@ export const downloadZip = async (req: NextApiRequest, res: NextApiResponse): Pr
     }
 
     try {
+        await initDb(); // Ensure the database and table are initialized before querying
+
         const db = await getDb();
         const torrent = await db.get(
             'SELECT zip_path, name FROM torrent_vault WHERE info_hash = ? AND status = ?',

@@ -1,11 +1,13 @@
 // pages/api/torrent/handlers/upload.ts
 import { NextApiResponse } from 'next';
 import * as WebTorrent from 'webtorrent';
+import { promises as fs } from 'fs';
 import { TaskInfo } from '@/types';
 import { cache, client } from '@/pages/api/config/torrent.config';
 import { setupTorrentHandlers } from '@/pages/api/services/torrent.service';
 import { formatBytes, getMimeType, runMiddleware, upload } from '../../utils/torrent.utils';
 import { apiResponse } from '../../utils/response.utils';
+import { initDb, getDb } from '../../config/db/index.config';
 
 export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
     try {
@@ -51,8 +53,47 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
         });
 
         const infoHash = tempTorrent.infoHash;
+      
+        await initDb(); // Ensure the database and table are initialized before querying
 
-        // Check for existing task
+        // Check database for existing torrent
+        const db = await getDb();
+        const existingTorrent = await db.get(
+            'SELECT * FROM torrent_vault WHERE info_hash = ?',
+            [infoHash]
+        );
+
+        if (existingTorrent) {
+            // Verify if ZIP file exists
+            try {
+                if (existingTorrent.zip_path) {
+                    await fs.access(existingTorrent.zip_path);
+                    // ZIP file exists, return download info
+                    return apiResponse(res, {
+                        success: true,
+                        statusCode: 200,
+                        message: 'Torrent already exists with ZIP file',
+                        data: {
+                            infoHash,
+                            name: existingTorrent.name,
+                            size: existingTorrent.size,
+                            zipSize: existingTorrent.zip_size,
+                            status: 'ready_for_download',
+                            downloadUrl: `/api/torrent/stream?infoHash=${infoHash}&download=true`
+                        },
+                    });
+                }
+            } catch (error) {
+                // ZIP file doesn't exist or is inaccessible, delete database entry
+                await db.run(
+                    'DELETE FROM torrent_vault WHERE info_hash = ?',
+                    [infoHash]
+                );
+                console.log(`Removed invalid database entry for ${infoHash}`);
+            }
+        }
+
+        // Check for existing task in cache
         const existingTask = Array.from(cache.keys()).find(key => {
             const task = cache.get(key) as TaskInfo;
             return task && task.infoHash === infoHash;
@@ -63,7 +104,7 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
             return apiResponse(res, {
                 success: true,
                 statusCode: 200,
-                message: 'Torrent already exists',
+                message: 'Torrent already in progress',
                 data: {
                     infoHash,
                     name: existingTaskInfo.name,
@@ -73,7 +114,7 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
             });
         }
 
-        // Add torrent to client
+        // Add torrent to client for new download
         client.add(torrentSource, { announce: ['wss://tracker.openwebtorrent.com'] }, (torrent: WebTorrent.Torrent) => {
             const taskInfo: TaskInfo = {
                 infoHash: torrent.infoHash,
@@ -101,7 +142,7 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
             return apiResponse(res, {
                 success: true,
                 statusCode: 200,
-                message: 'Torrent uploaded successfully',
+                message: 'Torrent download started',
                 data: {
                     infoHash,
                     name: torrent.name,
@@ -118,8 +159,8 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
         return apiResponse(res, {
             success: false,
             statusCode: 500,
-            message: 'Streaming error',
-            error: error instanceof Error ? error.message : 'Unknown streaming error',
+            message: 'Upload error',
+            error: error instanceof Error ? error.message : 'Unknown upload error',
         });
     }
 };

@@ -87,6 +87,8 @@ export interface UseTorrentUploadReturn {
     handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     handleMagnetLinkChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     handleUpload: () => Promise<void>;
+    downloadUrl: string | null;
+    isZipReadyForDownload: boolean;
 }
 
 export interface UploadFormProps {
@@ -101,6 +103,7 @@ export interface ProgressControlsProps {
     isProgressButtonDisabled: number | null;
     handleProgressCheck: () => Promise<void>;
     progressResetCancel: () => Promise<void>;
+    isZipReadyForDownload: boolean;
 }
 
 export interface FileListTableProps {

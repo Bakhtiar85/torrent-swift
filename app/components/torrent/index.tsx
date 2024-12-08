@@ -14,6 +14,8 @@ const TorrentDownloader: React.FC = () => {
         magnetLink,
         taskId,
         isUploading,
+        downloadUrl,
+        isZipReadyForDownload,
         handleFileChange,
         handleMagnetLinkChange,
         handleUpload,
@@ -28,6 +30,12 @@ const TorrentDownloader: React.FC = () => {
         handleFileDownload,
         progressResetCancel,
     } = useTorrentProgress(taskId);
+
+    const handleZipDownload = () => {
+        if (downloadUrl) {
+            window.location.href = downloadUrl;
+        }
+    };
 
     return (
         <div id="step-1" className="w-11/12 md:w-4/5 max-w-2xl mx-auto -mt-2 lg:-mt-0 p-4 sm:p-6 bg-gray-800 rounded-lg shadow-xl text-white transition-all duration-300 ease-in-out hover:shadow-2xl">
@@ -55,6 +63,7 @@ const TorrentDownloader: React.FC = () => {
                         isProgressButtonDisabled={isProgressButtonDisabled}
                         handleProgressCheck={handleProgressCheck}
                         progressResetCancel={progressResetCancel}
+                        isZipReadyForDownload={isZipReadyForDownload}
                     />
                 </Suspense>
             )}
@@ -68,9 +77,26 @@ const TorrentDownloader: React.FC = () => {
                             style={{ width: `${progress}%` }}
                         ></div>
                     </div>
-                    <p className="text-sm font-medium text-gray-400 mt-2 shadow-sm">{progress}% Complete</p>
                 </div>
             )}
+
+            {isZipReadyForDownload && (
+                <div className="flex justify-between items-center mt-2">
+                    <p className="text-sm font-medium text-gray-400 shadow-sm">{progress}% Complete</p>
+                    {(progress === 100 || isZipReadyForDownload) && downloadUrl && (
+                        <button
+                            onClick={handleZipDownload}
+                            className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors duration-200 flex items-center gap-2"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download ZIP
+                        </button>
+                    )}
+                </div>
+            )}
+
             {files.length > 0 && (
                 <div className="mt-4 sm:mt-6">
                     <h3 className="text-base lg:text-lg font-medium text-gray-300 mb-3 sm:mb-4 tracking-wide shadow-md">

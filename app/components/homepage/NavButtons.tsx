@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const navLinks = [
     { href: "/client", label: "Downloader", title: "Download files from .torrent or magnet link", isDisabled: false },
-    { href: "/listings", label: "Listings", title: "Items ready for download", isDisabled: true },
+    { href: "/listings", label: "Listings", title: "Items ready for download", isDisabled: false },
     { href: "/about", label: "About Us", title: "Little about us", isDisabled: true },
     { href: "/contact", label: "Contact Us", title: "Report any issue", isDisabled: true }
 ];

@@ -1,9 +1,11 @@
 // pages\api\utils\zip.utils.ts
 import * as yazl from 'yazl';
 import fs from 'fs';
-import fsPromises from 'fs/promises';
+import { promises as fsPromises } from 'fs';
 import path from 'path';
-import { TorrentFile } from '@/types';
+import * as WebTorrent from 'webtorrent';
+import { cache, client } from '../config/torrent.config';
+import { TaskInfo } from '@/types';
 
 const ZIP_DIR = path.join(process.cwd(), 'data', 'zips');
 
@@ -15,58 +17,62 @@ export async function ensureZipDir() {
     }
 }
 
-export async function createTorrentZip(infoHash: string, webTorrentFiles: TorrentFile[]): Promise<string> {
+export async function createTorrentZip(infoHash: string, files: WebTorrent.TorrentFile[]): Promise<string> {
     await ensureZipDir();
     const zipPath = path.join(ZIP_DIR, `${infoHash}.zip`);
-
+    
     return new Promise((resolve, reject) => {
-        const zipfile = new yazl.ZipFile();
-        const output = fs.createWriteStream(zipPath);
+        const zipFile = new yazl.ZipFile();
+        const writeStream = fs.createWriteStream(zipPath);
+        
+        // Set up completion handler
+        writeStream.on('close', () => resolve(zipPath));
+        writeStream.on('error', reject);
+        
+        // Pipe zip file to write stream
+        zipFile.outputStream.pipe(writeStream);
 
-        zipfile.outputStream.pipe(output);
+        // Counter to track processed files
+        let processedFiles = 0;
 
-        // Track files added and errors
-        let filesAdded = 0;
-        const filesToAdd = webTorrentFiles.length;
-
-        output.on('close', () => {
-            console.log(`Zip file created: ${zipPath}`);
-            console.log(`Total files added: ${filesAdded} of ${filesToAdd}`);
-            resolve(zipPath);
-        });
-
-        output.on('error', (err) => {
-            console.error('Output stream error:', err);
-            reject(err);
-        });
-
-        // Add each file to the zip
-        webTorrentFiles.forEach(file => {
-            const fullPath = path.join(process.cwd(), file.path);
-
-            // Verbose logging
-            console.log('Attempting to add file:', {
-                originalPath: file.path,
-                fullPath,
-                fileName: file.name,
-                fileExists: fs.existsSync(fullPath)
+        // Process each file
+        files.forEach((file) => {
+            const stream = file.createReadStream();
+            
+            // Add the stream to the zip with the file's name
+            zipFile.addReadStream(stream, file.name, {
+                compress: true,
+                mtime: new Date(),
+                mode: 0o644 // Standard file permissions
             });
 
-            // Check if file exists before adding
-            if (!fs.existsSync(fullPath)) {
-                console.warn(`File not found: ${fullPath}`);
-                return;
-            }
+            stream.on('end', () => {
+                processedFiles++;
+                if (processedFiles === files.length) {
+                    // All files processed, end the zip
+                    zipFile.end();
+                }
+            });
 
-            try {
-                zipfile.addFile(fullPath, file.name);
-                filesAdded++;
-            } catch (err) {
-                console.error(`Error adding file ${file.name}:`, err);
-            }
+            stream.on('error', (err) => {
+                console.error(`Error processing file ${file.name}:`, err);
+                reject(err);
+            });
         });
-
-        // Finalize the zip file
-        zipfile.end(); // Corrected here
     });
+}
+
+// Helper function to verify torrent and get its files
+export async function getTorrentFiles(infoHash: string): Promise<WebTorrent.TorrentFile[]> {
+    const taskInfo = cache.get(infoHash) as TaskInfo;
+    if (!taskInfo) {
+        throw new Error('Task not found in cache');
+    }
+
+    const torrent = client.get(taskInfo.infoHash);
+    if (!torrent) {
+        throw new Error('Torrent not found in client');
+    }
+
+    return torrent.files;
 }

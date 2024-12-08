@@ -121,27 +121,13 @@ export const recoverTorrent = async (infoHash: string, buffer: Buffer): Promise<
 
 export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoHash: string) {
     try {
-        await initDb(); // Ensure the database and table are initialized before querying
-
+        await initDb();
         const db = await getDb();
-        // Convert WebTorrent files to your TorrentFile type
-        // Retrieve the task from the cache
-        const task = cache.get(infoHash) as TaskInfo;
-        if (!task) {
-            throw new Error('Task not found in cache');
-        }
-
-        // Convert files from the task (node cache) to TorrentFile type
-        const torrentFiles: TorrentFile[] = task.files.map(file => ({
-            name: file.name,
-            length: file.length,
-            downloaded: file.downloaded,
-            progress: file.progress,
-            path: file.path,
-            mime: getMimeType(file.name),
-            streamReady: file.progress > 0.1
-        }));
-
+        
+        // Get WebTorrent files for streaming
+        const torrentFiles = torrent.files;
+        
+        console.log(`Creating ZIP for torrent ${infoHash} with ${torrentFiles.length} files`);
         const zipPath = await createTorrentZip(infoHash, torrentFiles);
         const zipStats = await fs.stat(zipPath);
 
@@ -158,12 +144,13 @@ export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoH
             infoHash,
             torrent.name,
             torrent.length,
-            torrent.files.length,
+            torrentFiles.length,
             'zipped',
             zipPath,
             zipStats.size
         );
 
+        console.log(`Successfully created ZIP at ${zipPath}`);
         return zipPath;
     } catch (error) {
         console.error('Error in handleTorrentCompletion:', error);
