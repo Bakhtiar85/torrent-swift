@@ -19,7 +19,6 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "webtorrent": "^2.5.1",
-    "yauzl-promise": "^4.0.0",
     "yazl": "^3.3.1",
     "zustand": "^5.0.1"
   },
@@ -29,7 +28,6 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/webtorrent": "^0.110.0",
-    "@types/yauzl-promise": "^4.0.1",
     "autoprefixer": "^10.4.20",
     "cssnano": "^7.0.6",
     "eslint": "^8.57.1",

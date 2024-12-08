@@ -25,6 +25,8 @@ const TorrentDownloader: React.FC = () => {
         progress,
         files,
         showProgress,
+        progress_downloadUrl,
+        progress_isZipReadyForDownload,
         isProgressButtonDisabled,
         handleProgressCheck,
         handleFileDownload,
@@ -34,6 +36,8 @@ const TorrentDownloader: React.FC = () => {
     const handleZipDownload = () => {
         if (downloadUrl) {
             window.location.href = downloadUrl;
+        } else if (progress_downloadUrl) {
+            window.location.href = progress_downloadUrl;
         }
     };
 
@@ -63,7 +67,7 @@ const TorrentDownloader: React.FC = () => {
                         isProgressButtonDisabled={isProgressButtonDisabled}
                         handleProgressCheck={handleProgressCheck}
                         progressResetCancel={progressResetCancel}
-                        isZipReadyForDownload={isZipReadyForDownload}
+                        isZipReadyForDownload={isZipReadyForDownload || progress_isZipReadyForDownload}
                     />
                 </Suspense>
             )}
@@ -80,10 +84,10 @@ const TorrentDownloader: React.FC = () => {
                 </div>
             )}
 
-            {isZipReadyForDownload && (
+            {(isZipReadyForDownload || progress_isZipReadyForDownload) && (
                 <div className="flex justify-between items-center mt-2">
                     <p className="text-sm font-medium text-gray-400 shadow-sm">{progress}% Complete</p>
-                    {(progress === 100 || isZipReadyForDownload) && downloadUrl && (
+                    {(progress === 100 || isZipReadyForDownload || progress_isZipReadyForDownload) && (downloadUrl||progress_downloadUrl) && (
                         <button
                             onClick={handleZipDownload}
                             className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors duration-200 flex items-center gap-2"

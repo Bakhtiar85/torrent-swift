@@ -7,6 +7,8 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
     const [files, setFiles] = useState<TorrentFile[]>([]);
     const [showProgress, setShowProgress] = useState<boolean>(false);
     const [isProgressButtonDisabled, setIsProgressButtonDisabled] = useState<number | null>(null);
+    const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+    const [isZipReadyForDownload, setIsZipReadyForDownload] = useState<boolean>(false);
 
     const handleProgressCheck = async () => {
         if (!taskId) return;
@@ -34,6 +36,13 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
 
                 if (progress === 100) {
                     randomTimeout = 2;
+                }
+                
+                // Handle case where torrent is already downloaded and zipped
+                if (APIResponse.data.status === 'ready_for_download' && APIResponse.data.downloadUrl) {
+                    setDownloadUrl(APIResponse.data.downloadUrl);
+                    setIsZipReadyForDownload(true);
+                    localStorage.setItem('torrentDownloadUrl', APIResponse.data.downloadUrl);
                 }
             } else {
                 randomTimeout = 4;
@@ -115,5 +124,7 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
         handleProgressCheck,
         handleFileDownload,
         progressResetCancel,
+        progress_downloadUrl: downloadUrl,
+        progress_isZipReadyForDownload: isZipReadyForDownload,
     };
 };

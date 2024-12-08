@@ -77,6 +77,8 @@ export interface UseTorrentProgressReturn {
     handleProgressCheck: () => Promise<void>;
     handleFileDownload: (fileIndex: number) => Promise<void>;
     progressResetCancel: () => Promise<void>;
+    progress_downloadUrl: string | null;
+    progress_isZipReadyForDownload: boolean;
 }
 
 export interface UseTorrentUploadReturn {
