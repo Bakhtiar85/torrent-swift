@@ -43,8 +43,8 @@ const FileListTable: React.FC<FileListTableProps> = ({ files, handleFileDownload
                     <table id="file-list-table" className="w-full table-fixed">
                         <thead>
                             <tr>
-                                <th className="w-4 md:w-8 px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider">#</th>
-                                <th className="w-[50%] md:w-[45%] px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider">File</th>
+                                <th className="w-2 md:w-8 px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider">#</th>
+                                <th className="w-[50%] md:w-3/5 px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider">File</th>
                                 <th className="hidden md:table-cell w-[50%] md:w-[30%] px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider truncate">Progress</th>
                                 <th className="hidden w-20 md:w-[120px] px-4 py-4 text-left text-[10px] md:text-xs font-semibold text-gray-300 uppercase tracking-wider truncate">Actions</th>
                             </tr>
@@ -59,12 +59,12 @@ const FileListTable: React.FC<FileListTableProps> = ({ files, handleFileDownload
                                     key={index}
                                     className="group hover:bg-gray-800/50 transition-colors duration-200"
                                 >
-                                    <td className="w-4 md:w-8 px-4 py-4 whitespace-nowrap">
+                                    <td className="w-2 md:w-8 px-4 py-4 whitespace-nowrap">
                                         <span className="text-sm font-medium text-gray-400">
                                             {index + 1}
                                         </span>
                                     </td>
-                                    <td className="w-[50%] md:w-[45%] px-2.5 md:px-4 py-2.5 md:py-4">
+                                    <td className="w-[50%] md:w-3/5 px-2.5 md:px-4 py-2.5 md:py-4">
                                         <div className="relative flex items-center">
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center space-x-2">
