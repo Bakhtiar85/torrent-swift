@@ -32,7 +32,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                 } else {
                     console.log('handleProgressCheck::> Req:', req.query);
                     if (req.query.download) {
-                        await downloadZip(req, res);
+                        return await downloadZip(req, res);
                     } else {
                         return await handleProgressCheck(req, res);
                     }
