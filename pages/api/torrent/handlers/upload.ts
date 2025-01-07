@@ -3,7 +3,7 @@ import { NextApiResponse } from 'next';
 import * as WebTorrent from 'webtorrent';
 import { promises as fs } from 'fs';
 import { TaskInfo } from '@/types';
-import { cache, client } from '@/pages/api/config/torrent.config';
+import { cache, client, trackerPeerServers } from '@/pages/api/config/torrent.config';
 import { setupTorrentHandlers } from '@/pages/api/services/torrent.service';
 import { formatBytes, getMimeType, runMiddleware, upload } from '../../utils/torrent.utils';
 import { apiResponse } from '../../utils/response.utils';
@@ -43,7 +43,7 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
         // Get infoHash without adding to client
         const tempTorrent = await new Promise<WebTorrent.Torrent>((resolve, reject) => {
             const temp = new (WebTorrent as any).default();
-            temp.add(torrentSource, { announce: ['wss://tracker.openwebtorrent.com'] }, (torrent: WebTorrent.Torrent) => {
+            temp.add(torrentSource, { announce: trackerPeerServers }, (torrent: WebTorrent.Torrent) => {
                 resolve(torrent);
                 setTimeout(() => {
                     torrent.destroy();
@@ -53,7 +53,7 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
         });
 
         const infoHash = tempTorrent.infoHash;
-      
+
         await initDb(); // Ensure the database and table are initialized before querying
 
         // Check database for existing torrent
@@ -115,7 +115,25 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
         }
 
         // Add torrent to client for new download
-        client.add(torrentSource, { announce: ['wss://tracker.openwebtorrent.com'] }, (torrent: WebTorrent.Torrent) => {
+        client.add(torrentSource, { announce: trackerPeerServers }, (torrent: WebTorrent.Torrent) => {
+            // console.log("TORRENT INFO::", torrent);
+            let posterURL = null;
+            if (Array.isArray(torrent.urlList) && torrent.urlList[0]) {
+                // Get the base URL from the torrent's web seed with fallback handling
+                const baseUrl = torrent.urlList[0] || torrent.ws || '';
+                // Find the poster file and construct its URL
+                const posterFile = torrent.files.find(file =>
+                    file.name.toLowerCase().includes('poster')
+                );
+
+                // Construct the poster URL if poster file exists and we have a base URL
+                posterURL = (posterFile && baseUrl) ?
+                    `${baseUrl}${encodeURIComponent(torrent.name)}/${encodeURIComponent(posterFile.name)}` :
+                    undefined;
+
+                console.log("posterURL::::", posterURL)
+            }
+
             const taskInfo: TaskInfo = {
                 infoHash: torrent.infoHash,
                 name: torrent.name,
@@ -137,7 +155,7 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
             };
 
             cache.set(infoHash, taskInfo);
-            setupTorrentHandlers(torrent, infoHash);
+            setupTorrentHandlers(torrent, infoHash, posterURL);
 
             return apiResponse(res, {
                 success: true,

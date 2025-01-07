@@ -17,8 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const db = await getDb();
         const torrents = await db.all(`
-            SELECT info_hash, name, size, file_count, category, 
-                   upload_date, status, zip_size 
+            SELECT * 
             FROM torrent_vault 
             ORDER BY upload_date DESC
         `);

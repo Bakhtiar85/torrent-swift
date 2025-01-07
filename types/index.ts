@@ -57,6 +57,7 @@ export interface ZipInfo {
     size: number;
     status: string;
     uploadDate: string;
+    poster_file?: string;
 }
 
 export interface UseZipDownloadReturn {

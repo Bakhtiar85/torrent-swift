@@ -14,7 +14,7 @@ export async function getDb() {
 }
 export async function initDb() {
     const db = await getDb();
-    
+
     await db.exec(`
         CREATE TABLE IF NOT EXISTS torrent_vault (
             info_hash TEXT PRIMARY KEY,
@@ -26,9 +26,10 @@ export async function initDb() {
             zip_path TEXT,
             zip_size BIGINT,
             metadata TEXT,
+            poster_file TEXT,
             status TEXT DEFAULT 'downloading'
         )
     `);
-    
+
     return db;
 }
