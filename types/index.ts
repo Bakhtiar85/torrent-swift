@@ -68,6 +68,15 @@ export interface UseZipDownloadReturn {
     refreshZipList: () => Promise<void>;
 }
 
+export interface TorrentAnalysis {
+    category: 'movie' | 'tv' | 'game' | 'app' | 'music' | 'unknown';
+    resolution?: string;
+    quality?: string;
+    isHDR?: boolean;
+    codec?: string;
+    posterURL?: string | undefined | null;
+}
+
 /************************************************ FILES INTERFACES *********************************************/
 
 export interface UseTorrentProgressReturn {

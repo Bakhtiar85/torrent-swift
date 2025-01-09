@@ -1,6 +1,7 @@
 // app\components\torrent\modules\ZipList.tsx
 import React from 'react';
 import { ZipInfo } from '@/types';
+import Image from 'next/image';
 
 interface ZipListProps {
     zips: ZipInfo[];
@@ -69,14 +70,20 @@ const ZipList: React.FC<ZipListProps> = ({ zips, onDownload, isLoading }) => {
                             </span>
 
                             {/* Poster Image */}
-                            <div className="h-48 bg-gray-700 flex items-center justify-center">
-                                <img
+                            <div className="h-48 bg-gray-700 flex items-center justify-center relative">
+                                <Image
                                     src={zip.poster_file || getMovieCoverImage(getShortenedMovieName(zip.name))}
                                     alt="Movie Cover"
-                                    className="h-full w-full object-contain"
+                                    fill
+                                    className="object-contain"
+                                    // Add error handling
+                                    onError={(e) => {
+                                        // Fallback to default image if loading fails
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = '/fallback-image.jpg'; // Your fallback image
+                                    }}
                                 />
                             </div>
-
                             {/* Movie Info */}
                             <div className="p-4">
                                 <h4 className="text-white font-bold truncate">{getShortenedMovieName(zip.name)}</h4>

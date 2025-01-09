@@ -1,5 +1,5 @@
 // pages/api/services/torrent.service.ts
-import { TaskInfo, TorrentFile } from '@/types';
+import { TaskInfo, TorrentAnalysis, TorrentFile } from '@/types';
 import fs from 'fs/promises';
 import { cache, client, torrentBuffers, trackerPeerServers } from '../config/torrent.config';
 import { getMimeType } from '../utils/torrent.utils';
@@ -30,7 +30,7 @@ export const updateProgress = (torrent: WebTorrent.Torrent, infoHash: string): v
     }
 };
 
-export const setupTorrentHandlers = (torrent: WebTorrent.Torrent, infoHash: string, posterURL?: string | undefined | null): void => {
+export const setupTorrentHandlers = (torrent: WebTorrent.Torrent, infoHash: string, torrentExtraInfo?: TorrentAnalysis): void => {
     const progressInterval = setInterval(() => {
         if (!cache.get(infoHash)) {
             clearInterval(progressInterval);
@@ -45,8 +45,7 @@ export const setupTorrentHandlers = (torrent: WebTorrent.Torrent, infoHash: stri
         updateProgress(torrent, infoHash);
 
         try {
-            await handleTorrentCompletion(torrent, infoHash, posterURL);
-            console.log("poster_file::", posterURL)
+            await handleTorrentCompletion(torrent, infoHash, torrentExtraInfo);
             // await cleanupTorrent(infoHash);
         } catch (error) {
             console.error('Error handling torrent completion:', error);
@@ -120,7 +119,7 @@ export const recoverTorrent = async (infoHash: string, buffer: Buffer): Promise<
     });
 };
 
-export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoHash: string, posterURL?: string | undefined | null) {
+export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoHash: string, torrentExtraInfo?: TorrentAnalysis) {
     try {
         await initDb();
         const db = await getDb();
@@ -128,7 +127,11 @@ export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoH
         // Get WebTorrent files for streaming
         const torrentFiles = torrent.files;
 
-        console.log(`Creating ZIP for torrent ${infoHash} with ${torrentFiles.length} files. poster_file:: ${posterURL}`)
+        console.log(`Creating ZIP for torrent ${infoHash} with ${torrentFiles.length} files. poster_file:: ${torrentExtraInfo}`)
+        const posterURL = torrentExtraInfo?.posterURL;
+        const category = torrentExtraInfo?.category;
+        const resolution = torrentExtraInfo?.resolution;
+        const quality = torrentExtraInfo?.quality;
         const zipPath = await createTorrentZip(infoHash, torrentFiles);
         const zipStats = await fs.stat(zipPath);
 
@@ -141,8 +144,10 @@ export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoH
                 status, 
                 zip_path, 
                 zip_size,
-                poster_file
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                poster_file,
+                category,
+                resolution
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             infoHash,
             torrent.name,
             torrent.length,
@@ -150,7 +155,9 @@ export async function handleTorrentCompletion(torrent: WebTorrent.Torrent, infoH
             'zipped',
             zipPath,
             zipStats.size,
-            posterURL
+            posterURL,
+            category,
+            resolution
         );
 
         console.log(`Successfully created ZIP at ${zipPath}`);

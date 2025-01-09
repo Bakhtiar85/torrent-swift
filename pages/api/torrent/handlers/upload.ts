@@ -2,12 +2,13 @@
 import { NextApiResponse } from 'next';
 import * as WebTorrent from 'webtorrent';
 import { promises as fs } from 'fs';
-import { TaskInfo } from '@/types';
+import { TaskInfo, TorrentAnalysis } from '@/types';
 import { cache, client, trackerPeerServers } from '@/pages/api/config/torrent.config';
 import { setupTorrentHandlers } from '@/pages/api/services/torrent.service';
 import { formatBytes, getMimeType, runMiddleware, upload } from '../../utils/torrent.utils';
 import { apiResponse } from '../../utils/response.utils';
 import { initDb, getDb } from '../../config/db/index.config';
+import { analyzeTorrentContent, getContentDescription } from './analyzer';
 
 export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
     try {
@@ -117,6 +118,12 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
         // Add torrent to client for new download
         client.add(torrentSource, { announce: trackerPeerServers }, (torrent: WebTorrent.Torrent) => {
             // console.log("TORRENT INFO::", torrent);
+
+            const contentAnalysis: TorrentAnalysis = analyzeTorrentContent(torrent);
+            const { category, resolution, quality } = contentAnalysis;
+            console.log("Content Analysis:", contentAnalysis);
+            console.log("Content Description:", getContentDescription(torrent));
+
             let posterURL = null;
             if (Array.isArray(torrent.urlList) && torrent.urlList[0]) {
                 // Get the base URL from the torrent's web seed with fallback handling
@@ -155,7 +162,7 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
             };
 
             cache.set(infoHash, taskInfo);
-            setupTorrentHandlers(torrent, infoHash, posterURL);
+            setupTorrentHandlers(torrent, infoHash, { posterURL, category, resolution, quality });
 
             return apiResponse(res, {
                 success: true,

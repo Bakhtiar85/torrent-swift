@@ -27,6 +27,7 @@ export async function initDb() {
             zip_size BIGINT,
             metadata TEXT,
             poster_file TEXT,
+            resolution TEXT,
             status TEXT DEFAULT 'downloading'
         )
     `);
