@@ -125,21 +125,16 @@ export const handleTorrentUpload = async (req: any, res: NextApiResponse) => {
             console.log("Content Description:", getContentDescription(torrent));
 
             let posterURL = null;
-            if (Array.isArray(torrent.urlList) && torrent.urlList[0]) {
-                // Get the base URL from the torrent's web seed with fallback handling
-                const baseUrl = torrent.urlList[0] || torrent.ws || '';
-                // Find the poster file and construct its URL
-                const posterFile = torrent.files.find(file =>
-                    file.name.toLowerCase().includes('poster')
-                );
+            const posterFile = torrent.files.find(file =>
+                file.name.toLowerCase().includes('poster')
+            );
 
-                // Construct the poster URL if poster file exists and we have a base URL
-                posterURL = (posterFile && baseUrl) ?
-                    `${baseUrl}${encodeURIComponent(torrent.name)}/${encodeURIComponent(posterFile.name)}` :
-                    undefined;
+            // Construct the poster URL if poster file exists
+            posterURL = posterFile ?
+                `${encodeURIComponent(torrent.name)}/${encodeURIComponent(posterFile.name)}` :
+                undefined;
 
-                console.log("posterURL::::", posterURL)
-            }
+            console.log("posterURL::::", posterURL);
 
             const taskInfo: TaskInfo = {
                 infoHash: torrent.infoHash,
