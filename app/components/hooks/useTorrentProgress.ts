@@ -1,17 +1,32 @@
 // hooks/useTorrentProgress.ts
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { UseTorrentProgressReturn, TorrentFile } from '@/types';
 
 export const useTorrentProgress = (taskId: string | null): UseTorrentProgressReturn => {
     const [progress, setProgress] = useState<number | null>(null);
+    const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const [files, setFiles] = useState<TorrentFile[]>([]);
     const [showProgress, setShowProgress] = useState<boolean>(false);
     const [isProgressButtonDisabled, setIsProgressButtonDisabled] = useState<number | null>(null);
     const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
     const [isZipReadyForDownload, setIsZipReadyForDownload] = useState<boolean>(false);
 
+    useEffect(() => {
+        return () => {
+            if (countdownRef.current) {
+                clearInterval(countdownRef.current);
+                countdownRef.current = null;
+            }
+        };
+    }, []);
+
     const handleProgressCheck = async () => {
         if (!taskId) return;
+
+        if (countdownRef.current) {
+            clearInterval(countdownRef.current);
+            countdownRef.current = null;
+        }
 
         setShowProgress(true);
         setIsProgressButtonDisabled(0);
@@ -42,6 +57,7 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
                 if (APIResponse.data.status === 'ready_for_download' && APIResponse.data.downloadUrl) {
                     setDownloadUrl(APIResponse.data.downloadUrl);
                     setIsZipReadyForDownload(true);
+                    setProgress(100);
                     localStorage.setItem('torrentDownloadUrl', APIResponse.data.downloadUrl);
                 }
             } else {
@@ -55,14 +71,16 @@ export const useTorrentProgress = (taskId: string | null): UseTorrentProgressRet
         } finally {
             setIsProgressButtonDisabled(randomTimeout);
 
-            const countdownInterval = setInterval(() => {
+            countdownRef.current = setInterval(() => {
                 setIsProgressButtonDisabled((prev) => {
                     if (prev !== null && prev > 1) {
                         return prev - 1;
-                    } else {
-                        clearInterval(countdownInterval);
-                        return null;
                     }
+                    if (countdownRef.current) {
+                        clearInterval(countdownRef.current);
+                        countdownRef.current = null;
+                    }
+                    return null;
                 });
             }, 1000);
         }

@@ -66,6 +66,39 @@ export const handleProgressCheck = async (req: NextApiRequest, res: NextApiRespo
         });
     }
 
+    await initDb();
+
+    const db = await getDb();
+    const existingTorrent = await db.get(
+        'SELECT * FROM torrent_vault WHERE info_hash = ?',
+        [infoHash]
+    );
+
+    // Completed jobs: ZIP + DB row must work even if in-memory cache expired (restart, TTL, etc.)
+    if (existingTorrent?.zip_path) {
+        try {
+            await fs.access(existingTorrent.zip_path);
+            return apiResponse(res, {
+                success: true,
+                statusCode: 200,
+                message: 'Torrent already exists with ZIP file',
+                data: {
+                    infoHash,
+                    name: existingTorrent.name,
+                    size: existingTorrent.size,
+                    zipSize: existingTorrent.zip_size,
+                    status: 'ready_for_download',
+                    downloadUrl: `/api/torrent/stream?infoHash=${infoHash}&download=true`,
+                    progress: 100,
+                    files: [],
+                },
+            });
+        } catch {
+            await db.run('DELETE FROM torrent_vault WHERE info_hash = ?', [infoHash]);
+            console.log(`Removed invalid database entry for ${infoHash}`);
+        }
+    }
+
     const task = cache.get(infoHash) as TaskInfo;
     if (!task) {
         return apiResponse(res, {
@@ -74,45 +107,6 @@ export const handleProgressCheck = async (req: NextApiRequest, res: NextApiRespo
             message: 'Task not found',
             error: 'Task not found',
         });
-    }
-
-    await initDb(); // Ensure the database and table are initialized before querying
-
-    // Check database for existing torrent
-    const db = await getDb();
-    const existingTorrent = await db.get(
-        'SELECT * FROM torrent_vault WHERE info_hash = ?',
-        [infoHash]
-    );
-
-    if (existingTorrent) {
-        // Verify if ZIP file exists
-        try {
-            if (existingTorrent.zip_path) {
-                await fs.access(existingTorrent.zip_path);
-                // ZIP file exists, return download info
-                return apiResponse(res, {
-                    success: true,
-                    statusCode: 200,
-                    message: 'Torrent already exists with ZIP file',
-                    data: {
-                        infoHash,
-                        name: existingTorrent.name,
-                        size: existingTorrent.size,
-                        zipSize: existingTorrent.zip_size,
-                        status: 'ready_for_download',
-                        downloadUrl: `/api/torrent/stream?infoHash=${infoHash}&download=true`
-                    },
-                });
-            }
-        } catch (error) {
-            // ZIP file doesn't exist or is inaccessible, delete database entry
-            await db.run(
-                'DELETE FROM torrent_vault WHERE info_hash = ?',
-                [infoHash]
-            );
-            console.log(`Removed invalid database entry for ${infoHash}`);
-        }
     }
 
     return apiResponse(res, {

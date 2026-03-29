@@ -35,6 +35,11 @@ export async function createTorrentZip(infoHash: string, files: WebTorrent.Torre
         // Counter to track processed files
         let processedFiles = 0;
 
+        if (files.length === 0) {
+            zipFile.end();
+            return;
+        }
+
         // Process each file
         files.forEach((file) => {
             const stream = file.createReadStream();
