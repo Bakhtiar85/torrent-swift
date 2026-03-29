@@ -1,6 +1,12 @@
 // pages/api/config/torrent.config.ts
 import NodeCache from 'node-cache';
 import * as WebTorrent from 'webtorrent';
+import { initDb } from './db/index.config';
+
+// Initialize DB on startup
+initDb()
+    .then(() => console.log('DB initialized'))
+    .catch((err) => console.error('DB init failed:', err));
 
 // Tracker Peer Servers
 export const trackerPeerServers: string[] = [
